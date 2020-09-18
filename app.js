@@ -21,6 +21,24 @@ const classGroupChatRouter = require(`${__dirname}/routes/classRoute/classGroupC
 // Router for the class dashboard
 const classDashboardRouter = require(`${__dirname}/routes/classRoute/classDashboardRoutes`);
 
+// Router for the class discussion board
+const classDiscussionBoardRouter = require(`${__dirname}/routes/classRoute/classDiscussionBoardRoutes`);
+
+// Router for the class course info
+const classCourseInfoRouter = require(`${__dirname}/routes/classRoute/classCourseInfoRoutes`);
+
+// Router for the class group post
+const classGroupPostRouter = require(`${__dirname}/routes/classRoute/classGroupPostRoutes`);
+
+// Router for the class group post comments
+const classGroupPostCommentRouter = require(`${__dirname}/routes/classRoute/classGroupPostCommentRoutes`);
+
+// Router for the class group post likes
+const classGroupPostLikeRouter = require(`${__dirname}/routes/classRoute/classGroupPostLikeRoutes`);
+
+// Router for the class group post photos
+const classGroupPostPhotoRouter = require(`${__dirname}/routes/classRoute/classGroupPostPhotoRoutes`);
+
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
 // This body parser is used to read data from body into request.body
@@ -46,6 +64,24 @@ app.use("/api/v1/classGroupChat", classGroupChatRouter);
 
 // Use the classDashboardRouter as middleware
 app.use("/api/v1/classDashboard", classDashboardRouter);
+
+// Use the classDiscussionBoardRouter as middleware
+app.use("/api/v1/classDiscussionBoard", classDiscussionBoardRouter);
+
+// Use the classCourseInfoRouter as middleware
+app.use("/api/v1/classCourseInfo", classCourseInfoRouter);
+
+// Use the classGroupPostRouter as middleware
+app.use("/api/v1/classGroupPost", classGroupPostRouter);
+
+// Use the classGroupPostCommentRouter as middleware
+app.use("/api/v1/classGroupPostComment", classGroupPostCommentRouter);
+
+// Use the classGroupPostLikeRouter as middleware
+app.use("/api/v1/classGroupPostLike", classGroupPostLikeRouter);
+
+// Use the classGroupPostPhotoRouter as middleware
+app.use("/api/v1/classGroupPostPhoto", classGroupPostPhotoRouter);
 
 // Export the app so that the server file can user it
 module.exports = app;

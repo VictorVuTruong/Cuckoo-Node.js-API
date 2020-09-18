@@ -15,6 +15,10 @@ const classCourseInfoSchema = new mongoose.Schema({
     type: String,
     required: [true, "Class code must not be blank"],
   },
+  subject: {
+    type: String,
+    required: [true, "Subject must not be blank"],
+  },
 });
 
 // Create the class course info item based on the schema that we have just created

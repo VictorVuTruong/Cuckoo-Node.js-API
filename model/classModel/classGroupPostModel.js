@@ -9,7 +9,6 @@ const classGroupPostSchema = new mongoose.Schema({
   },
   dateCreated: {
     type: String,
-    required: [true, "Date created must not be blank"],
   },
   numOfImages: {
     type: Number,
@@ -39,6 +38,30 @@ classGroupPostSchema.pre("save", async function (next) {
 
   // Set the orderInCollection property of the object to be number of seconds since 1970
   this.orderInCollection = numOfSeconds;
+
+  // Go to the next middleware
+  next();
+});
+
+// Run this middleware before saving the document so that date created will be saved in the object
+classGroupPostSchema.pre("save", async function (next) {
+  // The date object
+  let dateObject = new Date();
+
+  // Get current day
+  let currentDay = dateObject.getDate();
+
+  // Get current month
+  let currentMonth = dateObject.getMonth() + 1;
+
+  // Get current year
+  let currentYear = dateObject.getFullYear();
+
+  // Combine them all to get the full date created string
+  let dateCreated = `${currentDay}/${currentMonth}/${currentYear}`;
+
+  // Set the dateCreated property of the object to be the current date
+  this.dateCreated = dateCreated;
 
   // Go to the next middleware
   next();

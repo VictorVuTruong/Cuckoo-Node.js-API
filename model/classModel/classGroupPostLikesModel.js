@@ -9,7 +9,7 @@ const classGroupPostLikesSchema = new mongoose.Schema({
   },
   postId: {
     type: String,
-    required: [true, "Class code must not be blank"],
+    required: [true, "Post id must not be blank"],
   },
 });
 

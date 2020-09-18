@@ -22,7 +22,7 @@ const classGroupPostCommentsSchema = new mongoose.Schema({
 
 // Run this middleware before saving chat message to the database in order to fill in order in collection
 // for the class group post comments
-classGroupChatMessageSchema.pre("save", async function (next) {
+classGroupPostCommentsSchema.pre("save", async function (next) {
   // Get the current day and time
   let currentDateAndTimeObject = new Date();
 

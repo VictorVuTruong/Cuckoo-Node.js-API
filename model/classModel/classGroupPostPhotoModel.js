@@ -15,7 +15,7 @@ const classGroupPostPhotoSchema = new mongoose.Schema({
 
 // Create the object out of the schema
 const ClassGroupPostPhoto = mongoose.model(
-  "ClassGroupPostLikes",
+  "ClassGroupPostPhoto",
   classGroupPostPhotoSchema
 );
 
