@@ -1,4 +1,4 @@
-// Immport the class group post like model
+// Import the class group post like model
 const classGroupPostLikeModel = require(`${__dirname}/../../model/classModel/classGroupPostLikesModel`);
 
 // Import the handler factory

@@ -9,12 +9,14 @@ const app = express();
 // Include the cookie parser
 const cookieParser = require("cookie-parser");
 
+//--------------USER ROUTERS --------------
 // Router for the user
 const userRouter = require(`${__dirname}/routes/userRoute/userRoutes`);
 
 // Router for the allowed users
 const allowedUserRouter = require(`${__dirname}/routes/userRoute/allowedUserRoutes`);
 
+//--------------CLASS ROUTERS --------------
 // Router for the class group chat
 const classGroupChatRouter = require(`${__dirname}/routes/classRoute/classGroupChatRoutes`);
 
@@ -39,6 +41,19 @@ const classGroupPostLikeRouter = require(`${__dirname}/routes/classRoute/classGr
 // Router for the class group post photos
 const classGroupPostPhotoRouter = require(`${__dirname}/routes/classRoute/classGroupPostPhotoRoutes`);
 
+//--------------CONFESSION ROUTERS --------------
+// Router for the confession posts
+const confessionPostRouter = require(`${__dirname}/routes/confessionRoute/confessionPostRoutes`);
+
+// Router for the confession post comments
+const confessionPostCommentRouter = require(`${__dirname}/routes/confessionRoute/confessionPostCommentRoutes`);
+
+// Router for the confession post likes
+const confessionPostLikeRouter = require(`${__dirname}/routes/confessionRoute/confessionPostLikeRoutes`);
+
+// Router for the confession post photos
+const confessionPostPhotoRouter = require(`${__dirname}/routes/confessionRoute/confessionPostPhotoRoutes`);
+
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
 // This body parser is used to read data from body into request.body
@@ -53,12 +68,14 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 
 // ROUTERS
+//-------------- CREATE ROUTES FOR THE USER --------------
 // Use the userRouter as middleware. This can be known as parent route for the user
 app.use("/api/v1/users", userRouter);
 
 // Use the allowedUserRouter as middleware. This can be known as parent route for the allowed users
 app.use("/api/v1/allowedUsers", allowedUserRouter);
 
+//-------------- CREATE ROUTES FOR THE CLASS --------------
 // Use the classGroupChatRouter as middleware. This is also parent route for class group chat
 app.use("/api/v1/classGroupChat", classGroupChatRouter);
 
@@ -82,6 +99,19 @@ app.use("/api/v1/classGroupPostLike", classGroupPostLikeRouter);
 
 // Use the classGroupPostPhotoRouter as middleware
 app.use("/api/v1/classGroupPostPhoto", classGroupPostPhotoRouter);
+
+//-------------- CREATE ROUTES FOR THE CONFESSION --------------
+// Use the confessionPostRouter as middleware
+app.use("/api/v1/confessionPost", confessionPostRouter);
+
+// Use the confessionPostCommentRouter as middleware
+app.use("/api/v1/confessionPostComment", confessionPostCommentRouter);
+
+// Use the confessionPostLikeRouter as middleware
+app.use("/api/v1/confessionPostLike", confessionPostLikeRouter);
+
+// Use the confessionPostPhotoRouter as middleware
+app.use("/api/v1/confessionPostPhoto", confessionPostPhotoRouter);
 
 // Export the app so that the server file can user it
 module.exports = app;

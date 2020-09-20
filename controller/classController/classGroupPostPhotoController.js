@@ -1,4 +1,4 @@
-// Immport the class group post photo model
+// Import the class group post photo model
 const classGroupPostPhotoModel = require(`${__dirname}/../../model/classModel/classGroupPostPhotoModel`);
 
 // Import the handler factory
