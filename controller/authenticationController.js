@@ -18,6 +18,7 @@ const { promisify } = require("util");
 
 // Import this one to encrypt password in the database
 const crypto = require("crypto");
+const { request } = require("http");
 
 // Function which will be used to create token for the user
 const signToken = (userID) => {
@@ -249,6 +250,50 @@ exports.protect = catchAsync(async (request, respond, next) => {
   respond.locals.user = currentUser;
   next();
 });
+
+// This function is used to check if token of the user still valid or not (login token)
+exports.checkToken = catchAsync(async (request, respond, next) => {
+  // Get the token if it does exist
+  // Get the authorization information of the user from the header
+  let token;
+  if (
+    request.headers.authorization &&
+    request.headers.authorization.startsWith("Bearer")
+  ) {
+    // Get the token from the request header
+    token = request.headers.authorization.split(" ")[1];
+  } // If there is no token in the headers.authorization, get it from the cookie
+  else if (request.cookies.jwt) {
+    // Get token from the cookie
+    token = request.cookies.jwt;
+  }
+
+  // Check if the token exists
+  if (!token) {
+    // If the user is not logged in the system, it also means that the user
+    return next(new AppError("You are not logged in the system", 401));
+  }
+
+  // Validate the token
+  // This step is to verify if the token has been modified or expired
+  // Also decode the token to get info about the user who own the token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // Check if the user still exist
+  const currentUser = await User.findById(decoded.userID);
+  if (!currentUser) {
+    return next(
+      // If the token belongs to the user who no longer exist, return an error to the client's app
+      new AppError("The token belong to the user who is no longer exist", 401)
+    );
+  }
+
+  // If everything is good, return the good respond to the client app
+  respond.status(200).json({
+    status: "valid",
+    messagae: "Valid token"
+  })
+})
 
 // This function is to handle actions when user forgot the password
 exports.forgotPassword = catchAsync(async (request, respond, next) => {

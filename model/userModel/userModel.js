@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema({
     },
     message: "Password are not the same",
   },
+  studentId: {
+    type: String,
+    required: [true, "Student id must not be blank"],
+  },
   passwordChangedAt: {
     type: Date,
   },

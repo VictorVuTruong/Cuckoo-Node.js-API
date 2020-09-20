@@ -23,6 +23,9 @@ router.post("/logout", authenticationController.logout);
 // The route for getting sign up token
 router.post("/getSignUpToken", authenticationController.getSignUpToken);
 
+// The route for validating login token
+router.post("/validateLoginToken", authenticationController.checkToken);
+
 // The route for getting all users
 // Query can also be done at this route
 router.get("/", userController.getAllUsers);
