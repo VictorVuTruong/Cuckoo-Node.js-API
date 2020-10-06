@@ -251,6 +251,38 @@ exports.protect = catchAsync(async (request, respond, next) => {
   next();
 });
 
+// The function to get info of the user based on token sent to server by client app
+exports.getUserInfoBasedOnToken = catchAsync(async (request, respond, next) => {
+  // Get the token if it does exist
+  // Get the authorization information of the user from the header
+  let token;
+  if (
+    request.headers.authorization &&
+    request.headers.authorization.startsWith("Bearer")
+  ) {
+    // Get the token from the request header
+    token = request.headers.authorization.split(" ")[1];
+  } // If there is no token in the headers.authorization, get it from the cookie
+  else if (request.cookies.jwt) {
+    // Get token from the cookie
+    token = request.cookies.jwt;
+  }
+
+  // Decode the token to get user id of the user included in the token
+  const decodedToken = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // Find user by id included in the token
+  const foundUser = await User.findById(decodedToken.userID);
+
+  console.log(foundUser)
+
+  // Return the respond
+  respond.status(200).json({
+    status: "Done",
+    data: foundUser
+  })
+})
+
 // This function is used to check if token of the user still valid or not (login token)
 exports.checkToken = catchAsync(async (request, respond, next) => {
   // Get the token if it does exist

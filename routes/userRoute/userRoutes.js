@@ -33,5 +33,8 @@ router.get("/", userController.getAllUsers);
 // With this middleware being used. All routes that come after this point will be protected
 router.use(authenticationController.protect);
 
+// The route for getting user info based on token
+router.get("/getUserInfoBasedOnToken", authenticationController.getUserInfoBasedOnToken)
+
 // Export the app in order to be able to be used by the app
 module.exports = router;

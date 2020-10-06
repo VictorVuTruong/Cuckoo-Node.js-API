@@ -54,6 +54,19 @@ const confessionPostLikeRouter = require(`${__dirname}/routes/confessionRoute/co
 // Router for the confession post photos
 const confessionPostPhotoRouter = require(`${__dirname}/routes/confessionRoute/confessionPostPhotoRoutes`);
 
+//--------------HBTGRAM ROUTERS --------------
+// Router for the hbt gram posts
+const hbtGramPostRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostRoutes`);
+
+// Router for the hbt gram post comments
+const hbtGramPostCommentRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostCommentRoutes`);
+
+// Router for the hbt gram post likes
+const hbtGramPostLikeRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostLikeRoutes`);
+
+// Router for the hbt gram post photos
+const hbtGramPostPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostPhotoRoutes`);
+
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
 // This body parser is used to read data from body into request.body
@@ -112,6 +125,19 @@ app.use("/api/v1/confessionPostLike", confessionPostLikeRouter);
 
 // Use the confessionPostPhotoRouter as middleware
 app.use("/api/v1/confessionPostPhoto", confessionPostPhotoRouter);
+
+//-------------- CREATE ROUTES FOR THE HBT GRAM --------------
+// Use the hbtGramPostRouter as middleware
+app.use("/api/v1/hbtGramPost", hbtGramPostRouter);
+
+// Use the hbtGramPostCommentRouter as middleware
+app.use("/api/v1/hbtGramPostComment", hbtGramPostCommentRouter);
+
+// Use the hbtGramPostLikeRouter as middleware
+app.use("/api/v1/hbtGramPostLike", hbtGramPostLikeRouter);
+
+// Use the hbtGramPostPhotoRouter as middleware
+app.use("/api/v1/hbtGramPostPhoto", hbtGramPostPhotoRouter);
 
 // Export the app so that the server file can user it
 module.exports = app;
