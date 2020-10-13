@@ -1,0 +1,8 @@
+{
+    "appService.zipIgnorePattern": [
+        "node_modules{,/**}",
+        ".vscode{,/**}"
+    ],
+    "appService.defaultWebAppToDeploy": "/subscriptions/b2640bd4-cd24-4a3c-aa95-785c268da216/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/MyHBT-API",
+    "appService.deploySubpath": "."
+}
