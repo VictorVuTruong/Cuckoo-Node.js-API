@@ -7,5 +7,7 @@ const factory = require(`${__dirname}/../handlerFactory`);
 // This middleware is used to get all allowed users
 exports.getAllUsers = factory.getAllDocuments(AllowedUser);
 
+exports.getAllUsersOrQuery = factory.getAllDocumentsOrQuery(AllowedUser);
+
 // This middleware is used for creating new allowed user
 exports.createNewUser = factory.createDocument(AllowedUser);

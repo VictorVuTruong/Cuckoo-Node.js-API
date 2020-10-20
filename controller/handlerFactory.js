@@ -83,6 +83,37 @@ exports.getAllDocuments = (Model) =>
     }
   });
 
+// The function to get all documents. It can be queried with or condition
+exports.getAllDocumentsOrQuery = (Model) =>
+  catchAsync(async (request, respond, next) => {
+    // Check for errors
+    try {
+      // Execute the query
+      const features = new APIFeatures(
+        Model.find(),
+        request.query
+      ).filterOrCondition();
+
+      const documents = await features.query;
+
+      // Send response
+      respond.status(200).json({
+        status: "success",
+        results: documents.length,
+        data: {
+          documents, // Don't have to specify the field name because the field name is the same as data name
+        },
+      });
+    } catch (error) {
+      respond.status(500).json({
+        status: "failed",
+        message:
+          "Error occurred while trying to get all documents with or query",
+        error: error,
+      });
+    }
+  });
+
 // The function to get one document based on document id
 exports.getOneDocument = (Model, populateOption) =>
   catchAsync(async (request, respond, next) => {

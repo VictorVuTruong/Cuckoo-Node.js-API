@@ -13,6 +13,8 @@ const authenticationController = require(`${__dirname}/../../controller/authenti
 // The route for signing up
 // This route also take the sign up token in order to verify the user
 router.post("/signup/:token", authenticationController.signUp);
+// Alternate route for signing up
+router.post("/signup", authenticationController.signUp);
 
 // The route for logging in
 router.post("/login", authenticationController.login);
@@ -34,7 +36,10 @@ router.get("/", userController.getAllUsers);
 router.use(authenticationController.protect);
 
 // The route for getting user info based on token
-router.get("/getUserInfoBasedOnToken", authenticationController.getUserInfoBasedOnToken)
+router.get(
+  "/getUserInfoBasedOnToken",
+  authenticationController.getUserInfoBasedOnToken
+);
 
 // Export the app in order to be able to be used by the app
 module.exports = router;

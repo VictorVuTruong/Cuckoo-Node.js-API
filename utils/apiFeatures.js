@@ -28,8 +28,47 @@ class APIFeatures {
       (match) => `$${match}`
     );
 
+    console.log(JSON.parse(queryString));
+
     // Create the query object based on the modified query string
     this.query.find(JSON.parse(queryString));
+
+    // Return the query object
+    return this;
+  }
+
+  // The filtering feature but for or condition
+  filterOrCondition() {
+    // Build the query
+    // Use destructuring to take every fields out of the request.query into an object
+    const queryObject = { ...this.queryString };
+
+    // Array of all fields that should be excluded from the query
+    const excludedFields = ["page", "sort", "limit", "fields"];
+
+    // Remove all fields in the excludedFields out of the queryObject
+    excludedFields.forEach((element) => delete queryObject[element]);
+
+    // Build the or query
+    var orQuery = `{"$or":[`;
+    Object.keys(queryObject).forEach((key) => {
+      orQuery = orQuery.concat("{");
+      orQuery = orQuery.concat(`"`);
+      orQuery = orQuery.concat(key);
+      orQuery = orQuery.concat(`"`);
+      orQuery = orQuery.concat(":");
+      orQuery = orQuery.concat(`"`);
+      orQuery = orQuery.concat(queryObject[key]);
+      orQuery = orQuery.concat(`"`);
+      orQuery = orQuery.concat("},");
+    });
+    orQuery = orQuery.substring(0, orQuery.length - 1);
+    orQuery = orQuery.concat("]}");
+
+    console.log(JSON.parse(orQuery));
+
+    // Create the query object based on the modified query string
+    this.query.find(JSON.parse(orQuery));
 
     // Return the query object
     return this;

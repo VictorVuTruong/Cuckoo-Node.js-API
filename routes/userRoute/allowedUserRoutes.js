@@ -13,5 +13,9 @@ router.route("/createNewUser").post(allowedUserController.createNewUser);
 // The route for getting all allowed users
 router.route("/").get(allowedUserController.getAllUsers);
 
+router
+  .route("/queryWithOrCondition")
+  .get(allowedUserController.getAllUsersOrQuery);
+
 // Export the app in order to be able to be used by the app
 module.exports = router;

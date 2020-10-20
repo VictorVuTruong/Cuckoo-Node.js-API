@@ -40,7 +40,7 @@ const createAndSendToken = (user, statusCode, request, respond) => {
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     // Set this to true so that the cookie can't be modified in anyway by the browser
-    httpOnly: true,
+    httpsOnly: true,
     // Test if the connection is secure or not. Only send the cookie when the connection is secure
     secure: request.secure || request.headers["x-forwarded-proto"] === "https",
   });
@@ -60,11 +60,20 @@ const createAndSendToken = (user, statusCode, request, respond) => {
 
 // The function which will be used to sign up the user
 exports.signUp = catchAsync(async (request, respond, next) => {
+  // Get the sign up token
+  // It can be either from the params or the query
+  var signUpToken = "";
+  if (request.params.token != null) {
+    signUpToken = request.params.token;
+  } else {
+    signUpToken = request.query.signUpToken;
+  }
+
   // Get user based on the token
   // Hash the token and compare it with the one in the database
   const hashedToken = crypto
     .createHash("sha256")
-    .update(request.params.token)
+    .update(signUpToken)
     .digest("hex");
 
   // Get the user based on the token
@@ -269,19 +278,23 @@ exports.getUserInfoBasedOnToken = catchAsync(async (request, respond, next) => {
   }
 
   // Decode the token to get user id of the user included in the token
-  const decodedToken = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  const decodedToken = await promisify(jwt.verify)(
+    token,
+    process.env.JWT_SECRET
+  );
 
   // Find user by id included in the token
   const foundUser = await User.findById(decodedToken.userID);
 
-  console.log(foundUser)
+  //console.log(foundUser)
+  console.log(token);
 
   // Return the respond
   respond.status(200).json({
     status: "Done",
-    data: foundUser
-  })
-})
+    data: foundUser,
+  });
+});
 
 // This function is used to check if token of the user still valid or not (login token)
 exports.checkToken = catchAsync(async (request, respond, next) => {
@@ -299,6 +312,9 @@ exports.checkToken = catchAsync(async (request, respond, next) => {
     // Get token from the cookie
     token = request.cookies.jwt;
   }
+
+  console.log("Here is token info");
+  console.log(token);
 
   // Check if the token exists
   if (!token) {
@@ -320,12 +336,14 @@ exports.checkToken = catchAsync(async (request, respond, next) => {
     );
   }
 
+  console.log(token);
+
   // If everything is good, return the good respond to the client app
   respond.status(200).json({
     status: "valid",
-    messagae: "Valid token"
-  })
-})
+    messagae: "Valid token",
+  });
+});
 
 // This function is to handle actions when user forgot the password
 exports.forgotPassword = catchAsync(async (request, respond, next) => {
