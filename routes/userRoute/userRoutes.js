@@ -32,6 +32,9 @@ router.post("/validateLoginToken", authenticationController.checkToken);
 // Query can also be done at this route
 router.get("/", userController.getAllUsers);
 
+// The route for updating info of the user (by the user based on jwt sent to server from client app)
+router.patch("/updateMe", userController.updateMe);
+
 // With this middleware being used. All routes that come after this point will be protected
 router.use(authenticationController.protect);
 

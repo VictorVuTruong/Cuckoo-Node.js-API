@@ -39,24 +39,15 @@ exports.updateMe = catchAsync(async (request, respond, next) => {
     return next(new AppError("This route is not for password updates", 400));
   }
 
-  // 2) Filtered out unwanted fields names that are not allowed to be updated
-  const filteredBody = filterObject(request.body, "name", "email");
+  // 2) Update user document
+  // Get id of the user
+  // It can be either from the request.user or from request.param
+  var userId = request.query.userId;
 
-  // If there is a file in the request, also add the photo property to the filteredBody object which is
-  // going to upload data to the database
-  if (request.file) {
-    filteredBody.photo = request.file.filename;
-  }
-
-  // 3) Update user document
-  const updatedUser = await User.findByIdAndUpdate(
-    request.user.id,
-    filteredBody,
-    {
-      new: true,
-      runValidators: true,
-    }
-  );
+  const updatedUser = await User.findByIdAndUpdate(userId, request.body, {
+    new: true,
+    runValidators: true,
+  });
 
   // Return the respond to the client
   respond.status(200).json({
