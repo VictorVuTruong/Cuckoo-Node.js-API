@@ -57,3 +57,17 @@ exports.updateMe = catchAsync(async (request, respond, next) => {
     },
   });
 });
+
+// This middleware is used for searching user
+exports.searchUser = catchAsync(async (request, response, next) => {
+  // Array of found user
+  const foundUser = await User.find({
+    fullName: { $regex: request.query.fullName },
+  });
+
+  // Return response to the client
+  response.status(200).json({
+    status: "success",
+    data: foundUser,
+  });
+});

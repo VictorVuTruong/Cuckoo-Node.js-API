@@ -24,6 +24,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     require: [true, "Last name must not be blank"],
   },
+  fullName: {
+    type: String,
+  },
   email: {
     type: String,
     required: [true, "Email must not be blank"],
@@ -112,6 +115,13 @@ userSchema.pre("save", async function (next) {
 
   // Delete the passwordConfirm field
   this.passwordConfirm = undefined;
+  next();
+});
+
+// This middleware us going to combine first, middle, last name of the user together to get the full name
+userSchema.pre("save", async function (next) {
+  // Combine first, middle, last name to get the full name
+  this.fullName = `${this.lastName} ${this.middleName} ${this.firstName}`;
   next();
 });
 

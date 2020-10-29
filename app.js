@@ -67,6 +67,13 @@ const hbtGramPostLikeRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramP
 // Router for the hbt gram post photos
 const hbtGramPostPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostPhotoRoutes`);
 
+//--------------MESSAGE ROUTERS --------------
+// Router for the messages
+const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
+
+// Router for the message rooms
+const messageRoomRouter = require(`${__dirname}/routes/messageRoute/messageRoomRoutes`);
+
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
 // This body parser is used to read data from body into request.body
@@ -138,6 +145,13 @@ app.use("/api/v1/hbtGramPostLike", hbtGramPostLikeRouter);
 
 // Use the hbtGramPostPhotoRouter as middleware
 app.use("/api/v1/hbtGramPostPhoto", hbtGramPostPhotoRouter);
+
+//-------------- CREATE ROUTES FOR THE MESSAGE --------------
+// Use the messageRouter as middleware
+app.use("/api/v1/message", messageRouter);
+
+// User the messageRoomRouter as middleware
+app.use("/api/v1/messageRoom", messageRoomRouter);
 
 // Export the app so that the server file can user it
 module.exports = app;

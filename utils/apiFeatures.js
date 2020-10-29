@@ -28,8 +28,6 @@ class APIFeatures {
       (match) => `$${match}`
     );
 
-    console.log(JSON.parse(queryString));
-
     // Create the query object based on the modified query string
     this.query.find(JSON.parse(queryString));
 
