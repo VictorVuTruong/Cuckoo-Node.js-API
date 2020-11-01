@@ -6,12 +6,12 @@ const factory = require(`${__dirname}/../handlerFactory`);
 
 // The function to get all hbt gram post photo
 exports.getAllHBTGramPostPhotos = factory.getAllDocuments(
-    hbtGramPostPhotoModel
+  hbtGramPostPhotoModel
 );
 
 // The function to create new hbt gram post photo
 exports.createNewHBTGramPostPhoto = factory.createDocument(
-    hbtGramPostPhotoModel
+  hbtGramPostPhotoModel
 );
 
 // The function to delete a hbt gram post photo
