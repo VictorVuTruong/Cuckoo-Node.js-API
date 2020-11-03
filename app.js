@@ -74,6 +74,9 @@ const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
 // Router for the message rooms
 const messageRoomRouter = require(`${__dirname}/routes/messageRoute/messageRoomRoutes`);
 
+// Router for the message photo
+const messagePhotoRouter = require(`${__dirname}/routes/messageRoute/messagePhotoRoutes`);
+
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
 // This body parser is used to read data from body into request.body
@@ -150,8 +153,11 @@ app.use("/api/v1/hbtGramPostPhoto", hbtGramPostPhotoRouter);
 // Use the messageRouter as middleware
 app.use("/api/v1/message", messageRouter);
 
-// User the messageRoomRouter as middleware
+// Use the messageRoomRouter as middleware
 app.use("/api/v1/messageRoom", messageRoomRouter);
+
+// Use the messagePhotoRouter as middleware
+app.use("/api/v1/messagePhoto", messagePhotoRouter);
 
 // Export the app so that the server file can user it
 module.exports = app;
