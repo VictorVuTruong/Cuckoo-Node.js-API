@@ -19,5 +19,10 @@ router
   .get(hbtGramPostController.getAllHBTGramPosts)
   .post(hbtGramPostController.createNewHBTGramPost);
 
+// The route for getting HBTGram post detail based on post id
+router
+  .route("/getHBTGramPostDetail")
+  .get(hbtGramPostController.getHBTGramPostDetail)
+
 // Export the router
 module.exports = router;
