@@ -28,3 +28,36 @@ exports.getAllMessageRoomsOfUser = catchAsync(
     });
   }
 );
+
+// The middleware to get chat room id between the 2 specified users
+exports.getMessageRoomIdBetween2Users = catchAsync(
+  async (request, response, next) => {
+    // Reference the database to get chat room id which include the 2 specified users
+    const chatRoomOf2Users = await MessageRoom.find({
+      $or: [
+        {
+          user1: request.query.user1,
+          user2: request.query.user2,
+        },
+        {
+          user1: request.query.user2,
+          user2: request.query.user1,
+        },
+      ],
+    });
+
+    if (chatRoomOf2Users.length === 0) {
+      // Return response to the client app (chat room info which include the 2 spefied user)
+      response.status(200).json({
+        status: "empty",
+        data: [],
+      });
+    } else {
+      // Return response to the client app (chat room info which include the 2 spefied user)
+      response.status(200).json({
+        status: "success",
+        data: chatRoomOf2Users[0],
+      });
+    }
+  }
+);

@@ -24,5 +24,10 @@ router
   .route("/getMessageRoomOfUser")
   .get(messageRoomController.getAllMessageRoomsOfUser);
 
+// The router for getting chat room id between the 2 specifed user od
+router
+  .route("/getMessageRoomIdBetween2Users")
+  .get(messageRoomController.getMessageRoomIdBetween2Users);
+
 // Export the router
 module.exports = router;

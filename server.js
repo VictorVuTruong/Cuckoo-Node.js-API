@@ -69,25 +69,21 @@ io.on("connection", async (socket) => {
   socket.on("jumpInChatRoom", async (data) => {
     // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
     if (data.chatRoomId != undefined) {
-    // Get chat room id
-    const chatRoomId = data.chatRoomId;
+      // Get chat room id
+      const chatRoomId = data.chatRoomId;
 
-    console.log(`Chat room Id: ${chatRoomId}`)
-
-    // Let user join in the room name
-    socket.join(`${chatRoomId}`);
+      // Let user join in the room name
+      socket.join(`${chatRoomId}`);
     } // If data is not JSON, parse it first
     else {
       // Get chat room id of the user who joined the chat room
-    const chatRoomData = JSON.parse(data);
+      const chatRoomData = JSON.parse(data);
 
-    // Get chat room id
-    const chatRoomId = chatRoomData.chatRoomId;
+      // Get chat room id
+      const chatRoomId = chatRoomData.chatRoomId;
 
-    console.log(`Chat room Id: ${chatRoomId}`)
-
-    // Let user join in the room name
-    socket.join(`${chatRoomId}`);
+      // Let user join in the room name
+      socket.join(`${chatRoomId}`);
     }
   });
 
@@ -107,10 +103,11 @@ io.on("connection", async (socket) => {
       // Get content of the message
       const messageContent = messageData.content;
 
+      // Get message id of the message
+      const messagId = messageData.messageId;
+
       // Get chat room id of the message
       const chatRoomId = messageData.chatRoomId;
-
-      console.log(data)
 
       // Create the received message object out of those info
       const receivedMessageObject = {
@@ -118,6 +115,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
+        messageId: messagId,
       };
 
       // Emit this event so that the client app will get update when new message is added
@@ -138,6 +136,9 @@ io.on("connection", async (socket) => {
       // Get content of the message
       const messageContent = messageData.content;
 
+      // Get message id of the message
+      const messagId = messageData.messageId;
+
       // Get chat room id of the message
       const chatRoomId = messageData.chatRoomId;
 
@@ -147,6 +148,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
+        messageId: messagId,
       };
 
       // Emit this event so that the client app will get update when new message is added
@@ -161,21 +163,17 @@ io.on("connection", async (socket) => {
     // Check to see if we need to parse the data or not
     if (data.chatRoomId != undefined) {
       // Get the chat room id
-      const chatRoomData = data
+      const chatRoomData = data;
 
       // Emit the typing event to other user in the chat room
-      socket.broadcast
-        .to(chatRoomData.chatRoomId)
-        .emit("typing")
+      socket.broadcast.to(chatRoomData.chatRoomId).emit("typing");
     } // Otherwise, parse the data first
     else {
       // Get the chat room id by parsing the incoming data
       const chatRoomData = JSON.parse(data);
 
       // Emit the typing event to other user in the chat room
-      socket.broadcast
-        .to(chatRoomData.chatRoomId)
-        .emit("typing")
+      socket.broadcast.to(chatRoomData.chatRoomId).emit("typing");
     }
   });
 
@@ -184,21 +182,94 @@ io.on("connection", async (socket) => {
     // Check to see if we need to parse the data or not
     if (data.chatRoomId != undefined) {
       // Get the chat room id
-      const chatRoomData = data
+      const chatRoomData = data;
 
       // Emit the typing event to other user in the chat room
-      socket.broadcast
-        .to(chatRoomData.chatRoomId)
-        .emit("doneTyping")
+      socket.broadcast.to(chatRoomData.chatRoomId).emit("doneTyping");
     } // Otherwise, parse the data first
     else {
       // Get the chat room id by parsing the incoming data
       const chatRoomData = JSON.parse(data);
 
       // Emit the typing event to other user in the chat room
-      socket.broadcast
-        .to(chatRoomData.chatRoomId)
-        .emit("doneTyping")
+      socket.broadcast.to(chatRoomData.chatRoomId).emit("doneTyping");
+    }
+  });
+
+  // Listen to event of when one of the user send photo as a message
+  socket.on("userSentPhotoAsMessage", async (data) => {
+    // If the data is already in JSON format, don't need to parse it
+    if (data.sender != undefined) {
+      // Get data of the message
+      const messageData = data;
+
+      // Get sender of the message
+      const messageSender = messageData.sender;
+
+      // Get reveiver of the message
+      const messageReceiver = messageData.receiver;
+
+      // Get content of the message
+      const messageContent = messageData.content;
+
+      // Get message id of the message
+      const messageId = messageData.messageId;
+
+      // Get chat room id of the message
+      const chatRoomId = messageData.chatRoomId;
+
+      // Create the received message object out of those info
+      const receivedMessageObject = {
+        sender: messageSender,
+        receiver: messageReceiver,
+        content: messageContent,
+        chatRoomId: chatRoomId,
+        messageId: messageId,
+      };
+
+      console.log(receivedMessageObject);
+
+      // Emit this event so that the client app will get update when new message is added
+      io.to(`${chatRoomId}`).emit(
+        "updateMessageWithPhoto",
+        receivedMessageObject
+      );
+    } // Otherwise, parse the data first
+    else {
+      // Get data of the message
+      const messageData = JSON.parse(data);
+
+      // Get sender of the message
+      const messageSender = messageData.sender;
+
+      // Get reveiver of the message
+      const messageReceiver = messageData.receiver;
+
+      // Get content of the message
+      const messageContent = messageData.content;
+
+      // Get message id of the message
+      const messageId = messageData.messageId;
+
+      // Get chat room id of the message
+      const chatRoomId = messageData.chatRoomId;
+
+      // Create the received message object out of those info
+      const receivedMessageObject = {
+        sender: messageSender,
+        receiver: messageReceiver,
+        content: messageContent,
+        chatRoomId: chatRoomId,
+        messageId: messageId,
+      };
+
+      console.log(receivedMessageObject);
+
+      // Emit this event so that the client app will get update when new message is added
+      io.to(`${chatRoomId}`).emit(
+        "updateMessageWithPhoto",
+        receivedMessageObject
+      );
     }
   });
 });

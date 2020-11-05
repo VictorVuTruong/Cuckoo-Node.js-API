@@ -67,6 +67,9 @@ const hbtGramPostLikeRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramP
 // Router for the hbt gram post photos
 const hbtGramPostPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostPhotoRoutes`);
 
+// Router for the hbt gram post comment photos
+const hbtGramPostCommentPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostCommentPhotoRoutes`);
+
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
 const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
@@ -148,6 +151,9 @@ app.use("/api/v1/hbtGramPostLike", hbtGramPostLikeRouter);
 
 // Use the hbtGramPostPhotoRouter as middleware
 app.use("/api/v1/hbtGramPostPhoto", hbtGramPostPhotoRouter);
+
+// Use the hbtGramPostCommentPhotoRouter as middleware
+app.use("/api/v1/hbtGramPostCommentPhoto", hbtGramPostCommentPhotoRouter);
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware
