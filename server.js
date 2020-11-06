@@ -115,7 +115,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
-        messageId: messagId,
+        _id: messagId,
       };
 
       // Emit this event so that the client app will get update when new message is added
