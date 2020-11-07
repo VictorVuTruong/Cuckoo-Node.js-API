@@ -224,7 +224,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
-        messageId: messageId,
+        _id: messageId,
       };
 
       console.log(receivedMessageObject);
@@ -260,7 +260,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
-        messageId: messageId,
+        _id: messageId,
       };
 
       console.log(receivedMessageObject);
