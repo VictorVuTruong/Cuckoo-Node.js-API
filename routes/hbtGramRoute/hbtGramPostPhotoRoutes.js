@@ -19,5 +19,10 @@ router
   .get(hbtGramPostPhotoController.getAllHBTGramPostPhotos)
   .post(hbtGramPostPhotoController.createNewHBTGramPostPhoto);
 
+// The route for getting photos posted by the specified user
+router
+  .route("/getPhotosOfUser")
+  .get(hbtGramPostPhotoController.getAllPhotosOfUser)
+
 // Export the module
 module.exports = router;

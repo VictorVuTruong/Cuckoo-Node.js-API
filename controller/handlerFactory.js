@@ -11,7 +11,7 @@ const APIFeatures = require(`${__dirname}/../utils/apiFeatures`);
 exports.deleteOne = (Model) =>
   catchAsync(async (request, respond, next) => {
     // Delete the document with specified id
-    const document = await Model.findByIdAndDelete(request.params.id);
+    const document = await Model.findByIdAndDelete(request.query.id);
 
     // Handle the 404 error
     if (!document) {

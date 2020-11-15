@@ -104,7 +104,7 @@ io.on("connection", async (socket) => {
       const messageContent = messageData.content;
 
       // Get message id of the message
-      const messagId = messageData.messageId;
+      const messageId = messageData.messageId;
 
       // Get chat room id of the message
       const chatRoomId = messageData.chatRoomId;
@@ -115,7 +115,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
-        _id: messagId,
+        _id: messageId,
       };
 
       // Emit this event so that the client app will get update when new message is added
@@ -137,7 +137,7 @@ io.on("connection", async (socket) => {
       const messageContent = messageData.content;
 
       // Get message id of the message
-      const messagId = messageData.messageId;
+      const messageId = messageData.messageId;
 
       // Get chat room id of the message
       const chatRoomId = messageData.chatRoomId;
@@ -148,7 +148,7 @@ io.on("connection", async (socket) => {
         receiver: messageReceiver,
         content: messageContent,
         chatRoomId: chatRoomId,
-        _id: messagId,
+        _id: messageId,
       };
 
       // Emit this event so that the client app will get update when new message is added
