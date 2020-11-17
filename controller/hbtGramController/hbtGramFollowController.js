@@ -24,6 +24,29 @@ exports.deleteHBTGramFollow = factory.deleteOne(
     HBTGramFollowModel
 )
 
+// The function to delete a follow between the 2 specified users
+exports.deleteHBTGramFollowBetween2Users = catchAsync(async (request, response, next) => {
+    // Get follower
+    const follower = request.query.follower
+
+    // Get following
+    const following = request.query.following
+
+    // Execute the command to remove a follow
+    await HBTGramFollowModel.remove({
+        follower: follower,
+        following: following
+    }, 
+    {
+        justOne: true
+    })
+
+    // Return response to the client app
+    response.status(204).json({
+        status: "Done"
+    })
+})
+
 // The function to check if the specified user is following the specified user or not
 exports.checkFollowStatus = catchAsync(async (request, response, next) => {
     // Get user id of the follower

@@ -84,21 +84,27 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
+    default: ""
   },
   facebook: {
     type: String,
+    default: ""
   },
   instagram: {
     type: String,
+    default: ""
   },
   twitter: {
     type: String,
+    default: ""
   },
   zalo: {
     type: String,
+    default: ""
   },
   description: {
     type: String,
+    default: ""
   },
 });
 

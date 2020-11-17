@@ -24,6 +24,11 @@ router
     .route("/")
     .delete(hbtGramFollowController.deleteHBTGramFollow)
 
+// The route for deleting a hbt gram follow based on follower and following
+router
+  .route("/deleteHBTGramFollowBetween2Users")
+  .delete(hbtGramFollowController.deleteHBTGramFollowBetween2Users)
+
 // The router to check following status of the 2 specified users
 router
     .route("/checkFollowStatus")
