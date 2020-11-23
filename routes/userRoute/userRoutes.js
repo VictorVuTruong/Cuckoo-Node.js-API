@@ -28,6 +28,9 @@ router.post("/getSignUpToken", authenticationController.getSignUpToken);
 // The route for validating login token
 router.post("/validateLoginToken", authenticationController.checkToken);
 
+// The route for getting list of users in a specified radius
+router.get("/getUserWithin", userController.getUserWithin);
+
 // The route for getting all users
 // Query can also be done at this route
 router.get("/", userController.getAllUsers);

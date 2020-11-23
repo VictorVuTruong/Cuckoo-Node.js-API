@@ -30,7 +30,7 @@ exports.deleteOne = (Model) =>
 exports.updateOne = (Model) =>
   catchAsync(async (request, respond, next) => {
     const document = await Model.findByIdAndUpdate(
-      request.params.id,
+      request.query.id,
       request.body,
       {
         // This option is to return the modified document rather than the original

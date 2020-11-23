@@ -84,29 +84,41 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    default: ""
+    default: "",
   },
   facebook: {
     type: String,
-    default: ""
+    default: "",
   },
   instagram: {
     type: String,
-    default: ""
+    default: "",
   },
   twitter: {
     type: String,
-    default: ""
+    default: "",
   },
   zalo: {
     type: String,
-    default: ""
+    default: "",
   },
   description: {
     type: String,
-    default: ""
+    default: "",
+  },
+  location: {
+    type: {
+      type: String,
+      default: "Point",
+      enum: ["Point"],
+    },
+    coordinates: [Number],
+    description: String,
   },
 });
+
+// Index for MongoDB so that it knows that location should be 2D sphere
+userSchema.index({ location: "2dsphere" });
 
 // The middleware that is going to be executed in order to encrypt user's password. This middleware will run before the save command
 // is executed (before the user's information is pushed to the database)

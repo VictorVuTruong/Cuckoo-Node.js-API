@@ -71,3 +71,63 @@ exports.searchUser = catchAsync(async (request, response, next) => {
     data: foundUser,
   });
 });
+
+// The middleware which is used to find restaurants within a specified radius
+exports.getUserWithin = catchAsync(async (request, respond, next) => {
+  const { distance, latlong, unit } = request.query;
+
+  // Get the lattitude and longitude from the latlong parameter
+  const [lattitude, longitude] = latlong.split(",");
+
+  // The radius should be converted to radian in this case. We get it by dividing the distance by the radius of the earth
+  var radiusInRadian = 0;
+  if (unit === "mi") {
+    radiusInRadian = distance / 3963.2;
+  } else {
+    radiusInRadian = distance / 6378.1;
+  }
+
+  if (!lattitude || !longitude) {
+    next(new AppError("Please provide your longitude and lattitude", 400));
+  }
+
+  // The request body
+  var requestBody = {
+    location: {
+      $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
+    },
+    country: request.query.country,
+    city: request.query.city,
+    stateOrProvince: request.query.stateOrProvince,
+    street: request.query.stateOrProvince,
+    zip: request.query.zip,
+  };
+
+  // Exclude fields that are not specified in the URL
+  if (!request.query.country) {
+    delete requestBody.country;
+  }
+  if (!request.query.city) {
+    delete requestBody.city;
+  }
+  if (!request.query.stateOrProvince) {
+    delete requestBody.stateOrProvince;
+  }
+  if (!request.query.street) {
+    delete requestBody.street;
+  }
+  if (!request.query.zip) {
+    delete requestBody.zip;
+  }
+
+  const users = await User.find(requestBody);
+
+  respond.status(200).json({
+    status: "success",
+    results: users.length,
+
+    data: {
+      data: users,
+    },
+  });
+});
