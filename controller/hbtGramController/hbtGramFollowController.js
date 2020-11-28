@@ -28,13 +28,10 @@ exports.deleteHBTGramFollowBetween2Users = catchAsync(
     const following = request.query.following;
 
     // Execute the command to remove a follow
-    await HBTGramFollowModel.remove(
+    await HBTGramFollowModel.deleteOne(
       {
         follower: follower,
         following: following,
-      },
-      {
-        justOne: true,
       }
     );
 

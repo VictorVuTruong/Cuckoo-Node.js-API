@@ -19,5 +19,10 @@ router
   .get(hbtGramPostLikeController.getAllHBTGramPostLikes)
   .post(hbtGramPostLikeController.createNewHBTGramPostLike);
 
+// The router for checking like status and create new like based on it
+router
+  .route("/checkLikeStatusAndCreateLike")
+  .post(hbtGramPostLikeController.checkLikeStatusAndCreateNewHBTGramPostLike)
+
 // Export the module
 module.exports = router;
