@@ -69,3 +69,34 @@ exports.checkLikeStatusAndCreateNewHBTGramPostLike = catchAsync(async (request, 
         })
     }
 })
+
+// The function to check like status of the user with the specified post id
+exports.checkLikeStatus = catchAsync(async (request, response, next) => {
+    // Get user id of the user to check like status
+    const userId = request.query.whoLike
+
+    // Get post id of the post to check like status
+    const postId = request.query.postId
+
+    // Reference the database to see if specified user has liked the post or not
+    const likeObject = await hbtGramPostLikeModel.findOne({
+        whoLike: userId,
+        postId: postId
+    })
+
+    // If the like object is null, it means that the specified user has not liked the post
+    if (likeObject == null) {
+        // Return response to the client and let the client know that the user has not liked the post
+        response.status(200).json({
+            status: "Done. User has not liked post",
+            data: `User has not liked post. User: ${userId}, PostID: ${postId}`
+        })
+    } // Otherwise, return response to the client app and let the client know that the user has liked post
+    else {
+        // Return response to the client
+        response.status(200).json({
+            status: "Done. User has liked post",
+            data: `User has like post. User: ${userId}, PostID: ${postId}`
+        })
+    }
+})

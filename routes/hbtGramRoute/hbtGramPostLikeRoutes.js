@@ -24,5 +24,10 @@ router
   .route("/checkLikeStatusAndCreateLike")
   .post(hbtGramPostLikeController.checkLikeStatusAndCreateNewHBTGramPostLike)
 
+// The router for getting like status of the user with the specified post id
+router
+  .route("/checkLikeStatus")
+  .post(hbtGramPostLikeController.checkLikeStatus)
+
 // Export the module
 module.exports = router;
