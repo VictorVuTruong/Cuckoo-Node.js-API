@@ -69,74 +69,81 @@ io.on("connection", async (socket) => {
   // Listen to evenr of when user jump into the post detail room
   socket.on("jumpInPostDetailRoom", async (data) => {
     // In some cases, data is already in JSON format, we don't have to do anything. Hence, check if
-    let postId
+    let postId;
     if (data.postId != undefined) {
       // Get the post id
-      postId = data.postId
+      postId = data.postId;
     } // If data is not in JSON, parse it first
     else {
       // Parse the data
-      const parsedData = JSON.parse(data)
+      const parsedData = JSON.parse(data);
 
       // Get the post id
-      postId = parsedData.postId
+      postId = parsedData.postId;
     }
 
     // Let user join in the post detail room
-    socket.join(postId)
-  })
+    socket.join(postId);
+  });
 
   // Listen to event of when new comment is created
   socket.on("newComment", async (data) => {
-    let commentObject
-    
+    let commentObject;
+
     // Check to see if we need to parse the data or not
     if (data.commentId != undefined) {
       // If it is already in JSON, don't parse it
-      commentObject = data
+      commentObject = data;
     } // Otherwise, parse it
     else {
-      commentObject = JSON.parse(data)
+      commentObject = JSON.parse(data);
     }
 
     // Create the new comment object based on the received comment object from the client app
     const commentObjectToEmit = {
-      commentId: commentObject.commentId,
+      _id: commentObject.commentId,
       writer: commentObject.writer,
-      content: commentObject.content
-    }
+      content: commentObject.content,
+    };
+
+    console.log(commentObjectToEmit);
 
     // Emit the event and let the client app know that new comment was created
     socket.broadcast
       .to(commentObject.postId)
-      .emit("updateComment", commentObjectToEmit)
-  })
+      .emit("updateComment", commentObjectToEmit);
+  });
 
   // Listen to event of when image is sent as a comment
   socket.on("imageSentAsComment", async (data) => {
-    let commentObject
+    let commentObject;
 
     // Check to see if we need to parse the data or not
     if (data.commentId != undefined) {
       // If it is already in JSON, don't parse it
-      commentObject = data
+      commentObject = data;
     } // Otherwise, parse it
     else {
-      commentObject = JSON.parse(data)
+      commentObject = JSON.parse(data);
     }
 
     // Create new comment objecct based on the received comment object from the client app
     const commentObjectToEmit = {
-      commentId: commentObject.commentId,
+      _id: commentObject.commentId,
       writer: commentObject.writer,
-      content: commentObject.content
-    }
+      content: commentObject.content,
+    };
+
+    console.log(commentObjectToEmit);
 
     // Emit the event and let the client app (including the sender know that new comment with photo was created)
-    io.to(commentObject.postId).emit("updateCommentWithPhoto", commentObjectToEmit)
-  })
+    io.to(commentObject.postId).emit(
+      "updateCommentWithPhoto",
+      commentObjectToEmit
+    );
+  });
   /********************** END POST DETAIL SERVER  ************************/
-  
+
   /********************** THESE ARE FOR THE CHAT SERVER  ************************/
   // Listen to event listener of when user jump into the chat room
   socket.on("jumpInChatRoom", async (data) => {
