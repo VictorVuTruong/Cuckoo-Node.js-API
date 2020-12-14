@@ -29,5 +29,10 @@ router
   .route("/getHBTGramPostForUser")
   .get(hbtGramPostController.getAllHBTGramPostsForUser)
 
+// The route for getting latest post object in the collection
+router
+  .route("/getLatestPostInCollection")
+  .get(hbtGramPostController.getLatestPostOrderInCollection)
+
 // Export the router
 module.exports = router;

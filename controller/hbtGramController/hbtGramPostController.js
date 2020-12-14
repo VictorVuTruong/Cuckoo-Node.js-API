@@ -26,14 +26,23 @@ exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
 
 // The function to get all hbt gram posts for the user
 exports.getAllHBTGramPostsForUser = catchAsync(async (request, response, next) => {
+  // Get current location in list of the user
+  const currentLocationInList = request.query.currentLocationInList
+  
   // Get user id of the user to get posts for
   const userId = request.query.userId
 
   // Array of posts for the user (will be added when post for user is found)
   const arrayOfPostsForUser = []
   
-  // Reference the database to get HBT Gram posts (later, we will just take a portion)
-  const allPosts = await hbtGramPostModel.find()
+  // Reference the database to get HBT Gram posts from the specified location in list of the user
+  const allPosts = await hbtGramPostModel.find({
+    orderInCollection: {
+      $lt: currentLocationInList
+    }
+  }).sort({
+    orderInCollection: -1
+  }).limit(10)
 
   // For each of posts in the array, check to see if the specified user follow writer of the post or not
   for (i = 0; i < allPosts.length; i++) {
@@ -56,7 +65,21 @@ exports.getAllHBTGramPostsForUser = catchAsync(async (request, response, next) =
   response.status(200).json({
     status: "Done",
     results: arrayOfPostsForUser.length,
-    data: arrayOfPostsForUser
+    data: {
+      documents: arrayOfPostsForUser
+    }
+  })
+})
+
+// The function to get order in collection of the latest post in the collection
+exports.getLatestPostOrderInCollection = catchAsync(async (request, response, next) => {
+  // Reference the database to get post object of the latest post in the post collection
+  const latestPostObjet = await hbtGramPostModel.find().limit(1).sort({$natural: -1})
+
+  // Return response to the client app
+  response.status(200).json({
+    status: "Done",
+    data: latestPostObjet[0]
   })
 })
 
