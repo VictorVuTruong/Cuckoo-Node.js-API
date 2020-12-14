@@ -3,6 +3,9 @@ const { request, response } = require("express");
 // Import the hbt gram post model
 const hbtGramPostModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostModel`);
 
+// Import the hbt gram follow model
+const hbtGramFollowModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramFollowModel`);
+
 // Import the HBTGram post comment model
 const hbtGramPostCommentModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostCommentModel`);
 
@@ -20,6 +23,42 @@ const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
 // The function to get all hbt gram posts
 exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
+
+// The function to get all hbt gram posts for the user
+exports.getAllHBTGramPostsForUser = catchAsync(async (request, response, next) => {
+  // Get user id of the user to get posts for
+  const userId = request.query.userId
+
+  // Array of posts for the user (will be added when post for user is found)
+  const arrayOfPostsForUser = []
+  
+  // Reference the database to get HBT Gram posts (later, we will just take a portion)
+  const allPosts = await hbtGramPostModel.find()
+
+  // For each of posts in the array, check to see if the specified user follow writer of the post or not
+  for (i = 0; i < allPosts.length; i++) {
+    // Get user id of the post writer
+    const postWriterUserId = allPosts[i].writer
+
+    // Reference the database to check and see if the specified user follows the post writer or not
+    const followObject = await hbtGramFollowModel.findOne({
+      follower: userId,
+      following: postWriterUserId
+    })
+
+    // If the followObject between the 2 users is not null, add the post object to the array of posts for user
+    if (followObject != null) {
+      arrayOfPostsForUser.push(allPosts[i])
+    }
+  }
+
+  // Return response to the client app
+  response.status(200).json({
+    status: "Done",
+    results: arrayOfPostsForUser.length,
+    data: arrayOfPostsForUser
+  })
+})
 
 // The function to get HBTGram post detail
 // This will include post info, URLs of images, number of likes and comments and array of comments

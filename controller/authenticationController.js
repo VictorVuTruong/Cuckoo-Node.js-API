@@ -87,7 +87,7 @@ exports.signUp = catchAsync(async (request, respond, next) => {
     return next(new AppError("Token is invalid or has expired", 400));
   }
   // If the user has already created a new account, don't let the user do that again
-  if (user.registered == "yes") {
+  if (user.registered == "yes" && user.role == "user") {
     return next(new AppError("You have already created the account", 400));
   }
 
@@ -103,7 +103,9 @@ exports.signUp = catchAsync(async (request, respond, next) => {
   createAndSendToken(newUser, 201, request, respond);
 
   // Update the registered field in the database to be "yes" so that the user won't be able to register again
-  user.registered = "yes";
+  if (user.role == "user") {
+    user.registered = "yes";
+  }
 
   // Delete the signUpToken and the signUpTokenExpires property in the database. Since the
   // token is already used at this point

@@ -136,7 +136,17 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-// This middleware us going to combine first, middle, last name of the user together to get the full name
+// This middleware is going to create the default location for the user
+userSchema.pre("save", async function (next) {
+  // Create the default current location
+  this.location = {
+    coordinates: [107.59148730624084, 16.46396205584513],
+    description: "",
+    type: "Point"
+  }
+})
+
+// This middleware is going to combine first, middle, last name of the user together to get the full name
 userSchema.pre("save", async function (next) {
   // Combine first, middle, last name to get the full name
   this.fullName = `${this.lastName} ${this.middleName} ${this.firstName}`;

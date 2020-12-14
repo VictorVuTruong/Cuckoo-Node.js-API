@@ -24,5 +24,10 @@ router
   .route("/getHBTGramPostDetail")
   .get(hbtGramPostController.getHBTGramPostDetail)
 
+// THe route for getting HBTGram posts for the user
+router
+  .route("/getHBTGramPostForUser")
+  .get(hbtGramPostController.getAllHBTGramPostsForUser)
+
 // Export the router
 module.exports = router;
