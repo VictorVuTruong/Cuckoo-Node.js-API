@@ -73,6 +73,12 @@ const hbtGramPostCommentPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/
 // Router for the hbt gram follow
 const hbtGramFollowRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramFollowRoutes`)
 
+// Router for the hbt gram user interaction
+const hbtGramUserInteractionRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserInteractionRoutes`)
+
+// Router for the hbt gram user like interaction
+const hbtGramUserLikeInteractionRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserLikeInteractionRoutes`)
+
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
 const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
@@ -160,6 +166,12 @@ app.use("/api/v1/hbtGramPostCommentPhoto", hbtGramPostCommentPhotoRouter);
 
 // Use the hbtGramFollowRouter as middleware
 app.use("/api/v1/hbtGramFollow", hbtGramFollowRouter)
+
+// Use the hbtGramUserInteraction as middleware
+app.use("/api/v1/hbtGramUserInteraction", hbtGramUserInteractionRouter)
+
+// Use the hbtGramUserLikeInteraction
+app.use("/api/v1/hbtGramUserLikeInteraction", hbtGramUserLikeInteractionRoutes)
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware
