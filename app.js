@@ -71,13 +71,19 @@ const hbtGramPostPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGram
 const hbtGramPostCommentPhotoRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramPostCommentPhotoRoutes`);
 
 // Router for the hbt gram follow
-const hbtGramFollowRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramFollowRoutes`)
+const hbtGramFollowRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramFollowRoutes`);
 
 // Router for the hbt gram user interaction
-const hbtGramUserInteractionRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserInteractionRoutes`)
+const hbtGramUserInteractionRouter = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserInteractionRoutes`);
 
 // Router for the hbt gram user like interaction
-const hbtGramUserLikeInteractionRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserLikeInteractionRoutes`)
+const hbtGramUserLikeInteractionRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserLikeInteractionRoutes`);
+
+// Router for the hbt gram user comment interaction
+const hbtGramUserCommentInteractionRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramUserCommentInteractionRoutes`);
+
+// Router for the hbt gram account stats
+const hbtGramAccountStatsRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramAccountStatsRoutes`);
 
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
@@ -165,13 +171,22 @@ app.use("/api/v1/hbtGramPostPhoto", hbtGramPostPhotoRouter);
 app.use("/api/v1/hbtGramPostCommentPhoto", hbtGramPostCommentPhotoRouter);
 
 // Use the hbtGramFollowRouter as middleware
-app.use("/api/v1/hbtGramFollow", hbtGramFollowRouter)
+app.use("/api/v1/hbtGramFollow", hbtGramFollowRouter);
 
 // Use the hbtGramUserInteraction as middleware
-app.use("/api/v1/hbtGramUserInteraction", hbtGramUserInteractionRouter)
+app.use("/api/v1/hbtGramUserInteraction", hbtGramUserInteractionRouter);
 
 // Use the hbtGramUserLikeInteraction
-app.use("/api/v1/hbtGramUserLikeInteraction", hbtGramUserLikeInteractionRoutes)
+app.use("/api/v1/hbtGramUserLikeInteraction", hbtGramUserLikeInteractionRoutes);
+
+// Use the hbtGramUserCommentInteraction
+app.use(
+  "/api/v1/hbtGramUserCommentInteraction",
+  hbtGramUserCommentInteractionRoutes
+);
+
+// Use the hbtGramAccountStatsRoutes
+app.use("/api/v1/hbtGramAccountStats", hbtGramAccountStatsRoutes);
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware

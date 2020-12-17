@@ -7,18 +7,20 @@ const authenticationController = require(`${__dirname}/../../controller/authenti
 // Create new router for the confession post
 const router = express.Router();
 
-// Import the HBTGramUserLikeInteractionController module
-const hbtGramUserLikeInteractionController = require(`${__dirname}/../../controller/hbtGramController/hbtGramUserLikeInteractionController`);
+// Import the HBTGramUserCommentInteractionController module
+const hbtGramUserCommentInteractionController = require(`${__dirname}/../../controller/hbtGramController/hbtGramUserCommentInteractionController`);
 
 // Use the protect middleware to protect any routes beyond this point
 router.use(authenticationController.protect);
 
-// The route for getting all hbt gram user like interaction objects and create a new one
+// The route for getting all hbt gram user comment interaction objects and create a new one
 router
   .route("/")
-  .get(hbtGramUserLikeInteractionController.getHBTGramUserLikeInteractionObject)
+  .get(
+    hbtGramUserCommentInteractionController.getHBTGramUserCommentInteractionObject
+  )
   .post(
-    hbtGramUserLikeInteractionController.createNewHBTGramUserLikeInteractionObject
+    hbtGramUserCommentInteractionController.createNewHBTGramUserCommentInteractionObject
   );
 
 // Export the router
