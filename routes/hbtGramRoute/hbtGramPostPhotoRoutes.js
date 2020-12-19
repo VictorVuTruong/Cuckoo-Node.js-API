@@ -22,7 +22,12 @@ router
 // The route for getting photos posted by the specified user
 router
   .route("/getPhotosOfUser")
-  .get(hbtGramPostPhotoController.getAllPhotosOfUser)
+  .get(hbtGramPostPhotoController.getAllPhotosOfUser);
+
+// The route for getting photos for the specified user
+router
+  .route("/getPhotosForUser")
+  .get(hbtGramPostPhotoController.getPostPhotosForUser);
 
 // Export the module
 module.exports = router;

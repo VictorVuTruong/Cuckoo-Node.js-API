@@ -29,6 +29,11 @@ router
   .route("/getHBTGramPostForUser")
   .get(hbtGramPostController.getAllHBTGramPostsForUser);
 
+// The route for getting list of posts within a radius
+router
+  .route("/getHBTGramPostWithinRadius")
+  .get(hbtGramPostController.getHBTGramPostWithinARadius);
+
 // The route for getting latest post object in the collection
 router
   .route("/getLatestPostInCollection")

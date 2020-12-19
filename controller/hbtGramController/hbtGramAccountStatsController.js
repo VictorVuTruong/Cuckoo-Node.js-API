@@ -436,7 +436,7 @@ exports.updateUserProfileVisit = catchAsync(async (request, response, next) => {
 
   // If the user profile visit object between the 2 users is null, create one
   if (userProfileVisitObjectBetween2Users == null) {
-    // Create the new user profile visit object betwee the 2 users
+    // Create the new user profile visit object between the 2 users
     // Num of visits will be 1 because this will be the first time visitor see profile of visited user
     await hbtGramUserProfileVisitModel.create({
       user: visitedUserId,

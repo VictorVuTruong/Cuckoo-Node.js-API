@@ -1,11 +1,14 @@
-const { request, response } = require("express");
-const { use } = require("../../routes/hbtGramRoute/hbtGramPostRoutes");
-
 // Import the hbt gram post model
 const hbtGramPostModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostModel`);
 
+// Import the user model
+const User = require(`${__dirname}/../../model/userModel/userModel`);
+
 // Import the hbt gram follow model
 const hbtGramFollowModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramFollowModel`);
+
+// Import the hbt gram user interaction model
+const hbtGramUserInteractionModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramUserInteractionModel`);
 
 // Import the HBTGram post comment model
 const hbtGramPostCommentModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostCommentModel`);
@@ -29,72 +32,144 @@ exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
 exports.getAllHBTGramPostsForUser = catchAsync(
   async (request, response, next) => {
     // Get current location in list of the user
-    var currentLocationInList = request.query.currentLocationInList;
+    const currentLocationInList = request.query.currentLocationInList;
 
-    // Reference the database to get post object of the oldest post in the collection
-    const latestPostObjet = await hbtGramPostModel
-      .find()
-      .limit(1)
-      .sort({ $natural: 1 });
+    // Get location of the user
+    const userLocation = request.query.location;
 
-    // Get order in collection of the oldest post in the collection
-    const orderInCollectionOfOldestPost = latestPostObjet.orderInCollection;
+    // Get radius
+    const radius = request.query.radius;
 
     // Get user id of the user to get posts for
     const userId = request.query.userId;
 
+    // Array of users within a radius (will need to be modified because we will need
+    // to exclude users whose posts have been shown)
+    let arrayOfUsersWithinARadius = [];
+
+    // Array of users interact with the specified user
+    const arrayOfUsersInteractWith = [];
+
+    // Array of users whose posts already been shown
+    let arrayOfUsersShown = [];
+
+    //************************* SHOW POSTS BY THE TOP 5 USERS FIRST ************************** */
+    // Reference the database to get list of uses to whom the user interact with the most (sorted in order)
+    // We will just consider the top 5 users in the list (maybe 10 or 100 in the future when we have a lot of posts)
+    const listOfUsersInteractWith = await hbtGramUserInteractionModel
+      .find({
+        user: userId,
+      })
+      .sort({ interactionFrequency: -1 })
+      .limit(5);
+
+    // Loop through that array of users interact with to extract user id of those users
+    listOfUsersInteractWith.forEach((user) => {
+      // Get user id of the user interact with the specified user
+      arrayOfUsersInteractWith.push(user.interactWith);
+
+      // Push user id to the array of users whose post already been shown
+      arrayOfUsersShown.push(user.interactWith);
+    });
+
+    // Reference the database to get list of posts created by users to whom specified user interact with the most
     // Array of posts for the user (will be added when post for user is found)
-    const arrayOfPostsForUser = [];
+    // order in collection should be less then current location in list of the user
+    let arrayOfPostsForUser = await hbtGramPostModel
+      .find({
+        writer: {
+          $in: arrayOfUsersInteractWith,
+        },
+        orderInCollection: {
+          $lt: currentLocationInList,
+        },
+      })
+      .sort({ $natural: -1 })
+      .limit(5);
+    //************************* END SHOW POSTS BY THE TOP 5 USERS ************************** */
 
-    // Move the window until we get some posts
-    // Or until we reach end of the collection
-    while (arrayOfPostsForUser.length == 0) {
-      // If we are already at the end of the list, return response to the client to let the client know that end of collection has been reached
-      if (orderInCollectionOfOldestPost == currentLocationInList) {
-        response.status(200).json({
-          status: "End of collection reached",
-          results: 0,
-          data: {
-            documents: arrayOfPostsForUser,
-          },
-        });
+    //************************* SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
+    // Array of user id by rest of the followings
+    let arrayOfUserIdOfRestOfFollowings = [];
 
-        // Get out of the function
-        return;
-      }
+    // Reference the database to get list of users to whom specified user is following
+    const listOfFollowings = await hbtGramFollowModel.find({
+      follower: userId,
+    });
 
-      // Reference the database to get HBT Gram posts from the specified location in list of the user (probably has been updated a bit at this point)
-      const allPosts = await hbtGramPostModel
-        .find({
-          orderInCollection: {
-            $lt: currentLocationInList,
-          },
-        })
-        .sort({
-          orderInCollection: -1,
-        })
-        .limit(5);
+    // Loop through the array of rest of followings to extract their user id
+    listOfFollowings.forEach((following) => {
+      arrayOfUserIdOfRestOfFollowings.push(following.following);
+    });
 
-      // For each of posts in the array, check to see if the specified user follow writer of the post or not
-      for (i = 0; i < allPosts.length; i++) {
-        // Get user id of the post writer
-        const postWriterUserId = allPosts[i].writer;
+    // Exclude top 5 users from the list of followings
+    // We have list of user id of rest of followings
+    arrayOfUserIdOfRestOfFollowings = arrayOfUserIdOfRestOfFollowings.filter(
+      (x) => !arrayOfUsersInteractWith.includes(x)
+    );
 
-        // Reference the database to check and see if the specified user follows the post writer or not
-        const followObject = await hbtGramFollowModel.findOne({
-          follower: userId,
-          following: postWriterUserId,
-        });
+    // Push user id to the array of users whose post already been shown
+    arrayOfUsersShown = arrayOfUsersShown.concat(
+      arrayOfUserIdOfRestOfFollowings
+    );
 
-        // If the followObject between the 2 users is not null, add the post object to the array of posts for user
-        if (followObject != null) {
-          arrayOfPostsForUser.push(allPosts[i]);
-        }
-      }
+    // Reference the database again to get posts by rest of the followings
+    const arrayOfPostsByRestOfTheFollowings = await hbtGramFollowModel
+      .find({
+        writer: {
+          $in: arrayOfUserIdOfRestOfFollowings,
+        },
+        orderInCollection: {
+          $lt: currentLocationInList,
+        },
+      })
+      .sort({ $natural: -1 });
 
-      // Update the currentLocationInList to be the order in collection of the last post in this window
-      currentLocationInList = allPosts[allPosts.length];
-    }
+    // Concat array of posts by rest of followings with posts for the user
+    arrayOfPostsForUser = arrayOfPostsForUser.concat(
+      arrayOfPostsByRestOfTheFollowings
+    );
+    //************************* END SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
+
+    //************************* SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
+    // Call the function to get list of users within a radius
+    const listOfUsersWithinARadius = await getUsersWithin(
+      userLocation,
+      radius,
+      "km",
+      0
+    );
+
+    // Loop through that list of users within a radius to extract the their user id
+    listOfUsersWithinARadius.forEach((user) => {
+      // Add user id to the array of users within a radius
+      arrayOfUsersWithinARadius.push(`${user._id}`);
+    });
+
+    // Exclude all previous users from the array of users within a radius
+    // We have list of user id of users within a radius without duplicating posts
+    arrayOfUsersWithinARadius = arrayOfUsersWithinARadius.filter(
+      (x) => !arrayOfUsersShown.includes(x)
+    );
+
+    // Reference the database to get list of posts created by users who is within a specified radius
+    // Array of posts within a radius
+    // order in collection should be less then current location in list of the user
+    const arrayOfPostsWithinARadius = await hbtGramPostModel
+      .find({
+        writer: {
+          $in: arrayOfUsersWithinARadius,
+        },
+        orderInCollection: {
+          $lt: currentLocationInList,
+        },
+      })
+      .sort({ $natural: -1 })
+      .limit(5);
+
+    // Concat posts within a radius with array of posts for the user
+    arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsWithinARadius);
+    //************************* END SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
 
     // Return response to the client app
     response.status(200).json({
@@ -103,6 +178,57 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       data: {
         documents: arrayOfPostsForUser,
       },
+    });
+  }
+);
+
+// The function to get hbt gram posts within a radius
+exports.getHBTGramPostWithinARadius = catchAsync(
+  async (request, response, next) => {
+    // Array of users within a radius
+    const arrayOfUsersWithinARadius = [];
+
+    // Get current location in list of the user
+    const currentLocationInList = request.query.currentLocationInList;
+
+    // Get location of the user
+    const userLocation = request.query.location;
+
+    // Get radius
+    const radius = request.query.radius;
+
+    // Call the function to get list of users within a radius
+    const listOfUsersWithinARadius = await getUsersWithin(
+      userLocation,
+      radius,
+      "km",
+      0
+    );
+
+    // Loop through that list of users within a radius to extract the their user id
+    listOfUsersWithinARadius.forEach((user) => {
+      // Add user id to the array of users within a radius
+      arrayOfUsersWithinARadius.push(user._id);
+    });
+
+    // Reference the database to get list of posts created by users who is within a specified radius
+    // Array of posts within a radius
+    // order in collection should be less then current location in list of the user
+    const arrayOfPostsWithinARadius = await hbtGramPostModel
+      .find({
+        writer: {
+          $in: arrayOfUsersWithinARadius,
+        },
+        orderInCollection: {
+          $lt: currentLocationInList,
+        },
+      })
+      .sort({ $natural: -1 });
+
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: arrayOfPostsWithinARadius,
     });
   }
 );
@@ -119,7 +245,7 @@ exports.getLatestPostOrderInCollection = catchAsync(
     // Return response to the client app
     response.status(200).json({
       status: "Done",
-      data: latestPostObjet[0],
+      data: latestPostObjet[0].orderInCollection,
     });
   }
 );
@@ -190,6 +316,51 @@ exports.getHBTGramPostDetail = catchAsync(async (request, response, next) => {
   // Go to the next middleware
   next();
 });
+
+//************************************************** */
+/*
+ADDITIONAL FUNCTIONS
+1. The function to get list of users within a radius
+*/
+
+// The function to get list of users within a radius
+async function getUsersWithin(location, radius, unit, limit) {
+  // Get the lattitude and longitude from the location parameter
+  const [lattitude, longitude] = location.split(",");
+
+  // The radius should be converted to radian in this case. We get it by dividing the distance by the radius of the earth
+  var radiusInRadian = 0;
+  if (unit === "mi") {
+    radiusInRadian = radius / 3963.2;
+  } else {
+    radiusInRadian = radius / 6378.1;
+  }
+
+  // List of users within a radius, will be based on limit param passed to this function
+  let listOfUsersWithinRadius = null;
+
+  // Reference the database to get list of users within a radius
+  // Also limit number of results based on parameter passes to the function
+  // If it is blank, don't do anything
+  if (limit != 0) {
+    listOfUsersWithinRadius = await User.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
+      },
+    }).limit(limit);
+  } else {
+    listOfUsersWithinRadius = await User.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
+      },
+    });
+  }
+
+  // Return list of users within a radius
+  return listOfUsersWithinRadius;
+}
+
+/** ***************************** END ADDITIONAL FUNCTIONS ******************** */
 
 // The function to create new hbt gram post
 exports.createNewHBTGramPost = factory.createDocument(hbtGramPostModel);
