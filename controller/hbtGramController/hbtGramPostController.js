@@ -31,6 +31,16 @@ exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
 // The function to get all hbt gram posts for the user
 exports.getAllHBTGramPostsForUser = catchAsync(
   async (request, response, next) => {
+    /*
+    In this sequence, we will show posts based on 3 categories
+    1. Posts by top 5 users
+    2. Posts by rest of the followings
+    3. Posts by users nearby
+    */
+
+    // Array of order in collection of last posts in each of the above categories
+    var arrayOfLastPostOrderInCollection = [];
+
     // Get current location in list of the user
     const currentLocationInList = request.query.currentLocationInList;
 
@@ -86,6 +96,16 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       })
       .sort({ $natural: -1 })
       .limit(5);
+
+    // Get order in collection of last post in array of posts by top 5 users
+    // If there is no more posts by top 5 users, let the order in collection be 0
+    if (arrayOfPostsForUser.length != 0) {
+      arrayOfLastPostOrderInCollection.push(
+        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
+      );
+    } else {
+      arrayOfLastPostOrderInCollection.push(0);
+    }
     //************************* END SHOW POSTS BY THE TOP 5 USERS ************************** */
 
     //************************* SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
@@ -129,6 +149,16 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     arrayOfPostsForUser = arrayOfPostsForUser.concat(
       arrayOfPostsByRestOfTheFollowings
     );
+
+    // Get order in collection of last post in array of posts by rest of the following
+    // If there is no more posts by rest of the following, let the order in collection be 0
+    if (arrayOfPostsByRestOfTheFollowings.length != 0) {
+      arrayOfLastPostOrderInCollection.push(
+        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
+      );
+    } else {
+      arrayOfLastPostOrderInCollection.push(0);
+    }
     //************************* END SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
 
     //************************* SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
@@ -169,7 +199,30 @@ exports.getAllHBTGramPostsForUser = catchAsync(
 
     // Concat posts within a radius with array of posts for the user
     arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsWithinARadius);
+
+    // Get order in collection of last post in array of posts by users within a radius
+    // If there is no more posts by users within a radius, let the order in collection be 0
+    if (arrayOfPostsWithinARadius.length != 0) {
+      arrayOfLastPostOrderInCollection.push(
+        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
+      );
+    } else {
+      arrayOfLastPostOrderInCollection.push(0);
+    }
     //************************* END SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
+    // Filter out any element in the array of order in collection which is 0
+    arrayOfLastPostOrderInCollection = arrayOfLastPostOrderInCollection.filter(
+      (x) => !(x == 0)
+    );
+
+    // Compare order in collection of last posts in those 3 categogies
+    // Whichever smallest will be considered as user's new current location in list
+    // If there is no element in the array of collection, let new current location in list be 0
+    let newCurrentLocationInList = 0;
+
+    if (arrayOfLastPostOrderInCollection.length != 0) {
+      newCurrentLocationInList = Math.min(...arrayOfLastPostOrderInCollection);
+    }
 
     // Return response to the client app
     response.status(200).json({
@@ -177,6 +230,7 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       results: arrayOfPostsForUser.length,
       data: {
         documents: arrayOfPostsForUser,
+        newCurrentLocationInList: newCurrentLocationInList,
       },
     });
   }
