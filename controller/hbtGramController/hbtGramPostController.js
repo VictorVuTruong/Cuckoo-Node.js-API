@@ -38,8 +38,8 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     3. Posts by users nearby
     */
 
-    // Array of order in collection of last posts in each of the above categories
-    var arrayOfLastPostOrderInCollection = [];
+    // Array of order in collection of posts in each of the above categories
+    var arrayOfPostOrderInCollection = [];
 
     // Get current location in list of the user
     const currentLocationInList = request.query.currentLocationInList;
@@ -97,15 +97,12 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       .sort({ $natural: -1 })
       .limit(5);
 
-    // Get order in collection of last post in array of posts by top 5 users
-    // If there is no more posts by top 5 users, let the order in collection be 0
-    if (arrayOfPostsForUser.length != 0) {
-      arrayOfLastPostOrderInCollection.push(
-        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
-      );
-    } else {
-      arrayOfLastPostOrderInCollection.push(0);
-    }
+    // Loop through the array of posts by top 5 users, get their order in collection and add them
+    // to the array of order in collection
+    arrayOfPostsForUser.forEach((post) => {
+      // Add order in collection of the post to the array
+      arrayOfPostOrderInCollection.push(post.orderInCollection);
+    });
     //************************* END SHOW POSTS BY THE TOP 5 USERS ************************** */
 
     //************************* SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
@@ -134,7 +131,7 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     );
 
     // Reference the database again to get posts by rest of the followings
-    const arrayOfPostsByRestOfTheFollowings = await hbtGramFollowModel
+    const arrayOfPostsByRestOfTheFollowings = await hbtGramPostModel
       .find({
         writer: {
           $in: arrayOfUserIdOfRestOfFollowings,
@@ -150,15 +147,12 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       arrayOfPostsByRestOfTheFollowings
     );
 
-    // Get order in collection of last post in array of posts by rest of the following
-    // If there is no more posts by rest of the following, let the order in collection be 0
-    if (arrayOfPostsByRestOfTheFollowings.length != 0) {
-      arrayOfLastPostOrderInCollection.push(
-        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
-      );
-    } else {
-      arrayOfLastPostOrderInCollection.push(0);
-    }
+    // Loop through list of posts by rest of the followings, get their order in collection
+    // and add them to the array of order in collection
+    arrayOfPostsByRestOfTheFollowings.forEach((post) => {
+      // Add order in collection of post to the array
+      arrayOfPostOrderInCollection.push(post.orderInCollection);
+    });
     //************************* END SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
 
     //************************* SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
@@ -200,28 +194,21 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     // Concat posts within a radius with array of posts for the user
     arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsWithinARadius);
 
-    // Get order in collection of last post in array of posts by users within a radius
-    // If there is no more posts by users within a radius, let the order in collection be 0
-    if (arrayOfPostsWithinARadius.length != 0) {
-      arrayOfLastPostOrderInCollection.push(
-        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
-      );
-    } else {
-      arrayOfLastPostOrderInCollection.push(0);
-    }
+    // Loop through the array of posts by users nearby, get their order in collection
+    // and add them to the array of order in collection
+    arrayOfPostsWithinARadius.forEach((post) => {
+      // Add order in collectio of post to the array
+      arrayOfPostOrderInCollection.push(post.orderInCollection);
+    });
     //************************* END SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
-    // Filter out any element in the array of order in collection which is 0
-    arrayOfLastPostOrderInCollection = arrayOfLastPostOrderInCollection.filter(
-      (x) => !(x == 0)
-    );
 
     // Compare order in collection of last posts in those 3 categogies
     // Whichever smallest will be considered as user's new current location in list
     // If there is no element in the array of collection, let new current location in list be 0
     let newCurrentLocationInList = 0;
 
-    if (arrayOfLastPostOrderInCollection.length != 0) {
-      newCurrentLocationInList = Math.min(...arrayOfLastPostOrderInCollection);
+    if (arrayOfPostOrderInCollection.length != 0) {
+      newCurrentLocationInList = Math.min(...arrayOfPostOrderInCollection);
     }
 
     // Return response to the client app

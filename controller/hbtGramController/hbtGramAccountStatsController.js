@@ -166,19 +166,34 @@ exports.getUserInteractionFrequency = catchAsync(
   }
 );
 
-// The function to get interaction status for the user
+// The function to get interaction status for the user (user that interact with specified user the most)
 exports.getInteractionStatusForUser = catchAsync(
   async (request, response, next) => {
+    // Limit number of records to show
+    const limit = Number(request.query.limit);
+
     // Get user id of the user to get interaction status of
     const userId = request.query.userId;
 
     // Reference the database to get interaction object in which the specified user
     // is interacted with
-    const userInteractionObjectsForUser = await hbtGramUserInteractionModel
-      .find({
-        interactWith: userId,
-      })
-      .sort({ interactionFrequency: -1 });
+    let userInteractionObjectsForUser = null;
+
+    // Based on the limit to return right number of records
+    if (limit != 0) {
+      userInteractionObjectsForUser = await hbtGramUserInteractionModel
+        .find({
+          interactWith: userId,
+        })
+        .sort({ interactionFrequency: -1 })
+        .limit(limit);
+    } else {
+      userInteractionObjectsForUser = await hbtGramUserInteractionModel
+        .find({
+          interactWith: userId,
+        })
+        .sort({ interactionFrequency: -1 });
+    }
 
     // Return response to the client
     // This will have list of user interaction objects for the specified user
@@ -254,7 +269,7 @@ exports.updateLikeStatusForUser = catchAsync(
           user: userId,
           likedBy: arrayOfUsersInteractWithPost[i],
           numOfLikes: countOccurrences(
-            arrayOfUsersInteractWithPost,
+            arrayOfUsersWhoLikePost,
             arrayOfUsersInteractWithPost[i]
           ),
         });
@@ -267,7 +282,7 @@ exports.updateLikeStatusForUser = catchAsync(
             user: userId,
             likedBy: arrayOfUsersInteractWithPost[i],
             numOfLikes: countOccurrences(
-              arrayOfUsersInteractWithPost,
+              arrayOfUsersWhoLikePost,
               arrayOfUsersInteractWithPost[i]
             ),
           }
@@ -285,16 +300,31 @@ exports.updateLikeStatusForUser = catchAsync(
 // The function to get like interaction status of the user
 exports.getLikeInteractionStatusOfUser = catchAsync(
   async (request, response, next) => {
+    // Limit on number of records
+    const limit = Number(request.query.limit);
+
     // Get user id of the user to get like interaction status of
     const userId = request.query.userId;
 
     // Reference the database to get like interaction of the user
     // and sort it
-    const likeInteractionOfUser = await hbtGramUserLikeInteractionModel
-      .find({
-        user: userId,
-      })
-      .sort({ numOfLikes: -1 });
+    let likeInteractionOfUser = null;
+
+    // Based on limit to return right number of record
+    if (limit != 0) {
+      likeInteractionOfUser = await hbtGramUserLikeInteractionModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfLikes: -1 })
+        .limit(limit);
+    } else {
+      likeInteractionOfUser = await hbtGramUserLikeInteractionModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfLikes: -1 });
+    }
 
     // Return response to the client
     response.status(200).json({
@@ -368,7 +398,7 @@ exports.updateCommentStatusForUser = catchAsync(
           user: userId,
           commentedBy: arrayOfUsersInteractWithPost[i],
           numOfComments: countOccurrences(
-            arrayOfUsersInteractWithPost,
+            arrayOfUsersWhoCommentPost,
             arrayOfUsersInteractWithPost[i]
           ),
         });
@@ -381,7 +411,7 @@ exports.updateCommentStatusForUser = catchAsync(
             user: userId,
             commentedBy: arrayOfUsersInteractWithPost[i],
             numOfComments: countOccurrences(
-              arrayOfUsersInteractWithPost,
+              arrayOfUsersWhoCommentPost,
               arrayOfUsersInteractWithPost[i]
             ),
           }
@@ -399,16 +429,31 @@ exports.updateCommentStatusForUser = catchAsync(
 // The function to get comment interaction status of the user
 exports.getCommentInteractionStatusOfUser = catchAsync(
   async (request, response, next) => {
+    // Limit on number of records to return
+    const limit = Number(request.query.limit);
+
     // Get user id of the user to get comment interaction status of
     const userId = request.query.userId;
 
     // Reference the database to get comment interaction of the user
     // and sort it
-    const commentInteractionOfUser = await hbtGramUserCommentInteractionModel
-      .find({
-        user: userId,
-      })
-      .sort({ numOfComments: -1 });
+    let commentInteractionOfUser = null;
+
+    // Based on limit to return right number of records
+    if (limit != 0) {
+      commentInteractionOfUser = await hbtGramUserCommentInteractionModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfComments: -1 })
+        .limit(limit);
+    } else {
+      commentInteractionOfUser = await hbtGramUserCommentInteractionModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfComments: -1 });
+    }
 
     // Return response to the client
     response.status(200).json({
@@ -473,16 +518,31 @@ exports.updateUserProfileVisit = catchAsync(async (request, response, next) => {
 // The function to get user profile visit status for the user
 exports.getProfileVisitStatusForUser = catchAsync(
   async (request, response, next) => {
+    // Limit on number of records to return
+    const limit = Number(request.query.limit);
+
     // Get user id of the user to get profile visit status of
     const userId = request.query.userId;
 
     // Reference the database to get user profile visit objects in which the specified user get visited
     // sort this by number of times user get visited
-    const profileVisitObjectsOfUser = await hbtGramUserProfileVisitModel
-      .find({
-        user: userId,
-      })
-      .sort({ numOfVisits: -1 });
+    let profileVisitObjectsOfUser = null;
+
+    // Based on limit to return right number of records
+    if (limit != 0) {
+      profileVisitObjectsOfUser = await hbtGramUserProfileVisitModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfVisits: -1 })
+        .limit(limit);
+    } else {
+      profileVisitObjectsOfUser = await hbtGramUserProfileVisitModel
+        .find({
+          user: userId,
+        })
+        .sort({ numOfVisits: -1 });
+    }
 
     // Return response to the client
     response.status(200).json({
