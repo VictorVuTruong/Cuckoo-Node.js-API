@@ -38,6 +38,11 @@ router
   .route("/getUserLikeInteractionStatus")
   .get(hbtGramAccountStatsController.getLikeInteractionStatusOfUser);
 
+// The route for getting comment interaction status for the user
+router
+  .route("/getUserCommentInteractionStatus")
+  .get(hbtGramAccountStatsController.getCommentInteractionStatusOfUser);
+
 // The route for updating comment status for the user
 router
   .route("/updateCommentStatus")
@@ -52,6 +57,11 @@ router
 router
   .route("/getProfileVisitStatus")
   .get(hbtGramAccountStatsController.getProfileVisitStatusForUser);
+
+// The route for getting brief user stats of the user
+router
+  .route("/getBriefAccountStats")
+  .get(hbtGramAccountStatsController.getBriefAccountStatsForUser);
 
 // Export the router
 module.exports = router;

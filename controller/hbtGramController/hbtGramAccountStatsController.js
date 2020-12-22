@@ -551,3 +551,59 @@ exports.getProfileVisitStatusForUser = catchAsync(
     });
   }
 );
+
+// The function to get brief account stats for the user
+exports.getBriefAccountStatsForUser = catchAsync(
+  async (request, response, next) => {
+    // Get user id of the user to get interaction frequency of
+    const userId = request.query.userId;
+
+    // Limit on number of records to return
+    const limit = Number(request.query.limit);
+
+    // Reference the database to get user interaction objects of the specified user
+    // Also sort them in ascending order so that other function will know to which user
+    // interact with the specified user the most
+    // (thse will include interaction, like, comment, profile visit)
+    // Interaction
+    const userInteractionObjectsForUser = await hbtGramUserInteractionModel
+      .find({
+        interactWith: userId,
+      })
+      .sort({ interactionFrequency: -1 })
+      .limit(limit);
+
+    // Like
+    const likeInteractionOfUser = await hbtGramUserLikeInteractionModel
+      .find({
+        user: userId,
+      })
+      .sort({ numOfLikes: -1 })
+      .limit(limit);
+
+    // Comment
+    const commentInteractionOfUser = await hbtGramUserCommentInteractionModel
+      .find({
+        user: userId,
+      })
+      .sort({ numOfComments: -1 })
+      .limit(limit);
+
+    // Profile visit
+    const profileVisitObjectsOfUser = await hbtGramUserProfileVisitModel
+      .find({
+        user: userId,
+      })
+      .sort({ numOfVisits: -1 })
+      .limit(limit);
+
+    // Return those array to the client
+    response.status(200).json({
+      status: "Done",
+      arrayOfUserInteraction: userInteractionObjectsForUser,
+      arrayOfUserLikeInteraction: likeInteractionOfUser,
+      arrayOfUserCommentInteraction: commentInteractionOfUser,
+      arrayOfUserProfileVisit: profileVisitObjectsOfUser,
+    });
+  }
+);
