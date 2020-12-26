@@ -29,5 +29,15 @@ router
   .route("/getPhotosForUser")
   .get(hbtGramPostPhotoController.getPostPhotosForUser);
 
+// The route for getting photos for the user
+router
+  .route("/getRecommendedPhotosForUser")
+  .get(hbtGramPostPhotoController.getPhotosForUser)
+
+// The route for creating or updating a hbt gram post photo label visit
+router
+  .route("/createOrUpdateHBTGramPhotoLabelVisit")
+  .post(hbtGramPostPhotoController.createOrUpdateHBTGramPhotoLabelVisit)
+
 // Export the module
 module.exports = router;

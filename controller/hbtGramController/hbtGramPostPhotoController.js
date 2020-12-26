@@ -132,3 +132,181 @@ exports.getPostPhotosForUser = catchAsync(async (request, response, next) => {
     data: arrayOfPhotoObjectForUser,
   });
 });
+
+//***************************** PHOTO RECOMMEND ***************************** */
+// The function to create a new hbt gram photo label visit object or just to update the existing one
+exports.createOrUpdateHBTGramPhotoLabelVisit = catchAsync(async (request, response, next) => {
+  // Get user id
+  const userId = request.query.userId
+
+  // Get photo label
+  const photoLabel = request.query.photoLabel
+
+  // Reference the database to check if there is an existing photo label visit object between
+  // the user and the photo label or not
+  const photoLabelVisitObject = await hbtGramPostPhotoLabelVisitModel.findOne({
+      user: userId,
+      visitedLabel: photoLabel
+  })
+
+  // If the photo label visit object between the user and the photo label is null
+  // it means that it's not yet existed. Create one
+  if (photoLabelVisitObject == null) {
+      // Create the new photo label visit object between the user and the photo label
+      // Num of visit will be 1 initially
+      await hbtGramPostPhotoLabelVisitModel.create({
+          user: userId,
+          visitedLabel: photoLabel,
+          numOfVisits: 1
+      })
+  } // Otherwise, just update it
+  else {
+      // Get current number of visits
+      const currentNumOfVisits = photoLabelVisitObject.numOfVisits
+
+      // Update num of visits (add 1)
+      await hbtGramPostPhotoLabelVisitModel.findByIdAndUpdate(
+          photoLabelVisitObject._id,
+          {
+              numOfVisits: currentNumOfVisits + 1
+          }
+      )
+  }
+
+  // Return response to the client
+  response.status(200).json({
+      status: "Done",
+      data: "Post photo label visit object has been updated"
+  })
+})
+
+// The function to get photos for the user based on user search trend
+exports.getPhotosForUser = catchAsync(async (request, response, next) => {
+  // Get the user id
+  const userId = request.query.userId
+
+  // Array of photos to be shown to the user
+  var arrayOfPhotos = []
+
+  /* 
+  We will divide this into 2 categories
+  1. Top labels (1/4 of the labels visited by the user)
+  2. Rest of the labels (3/4 remainng)
+  */
+
+  //******************* GET NUM OF LABELS VISITED BY USERS ******************* */
+  // Reference the database to get all labels visited by the users
+  const labelsVisitedByUser = await hbtGramPostPhotoLabelVisitModel.find({
+      user: userId
+  })
+
+  // Get number of labels visited by user
+  const numOfLabelsVisited = labelsVisitedByUser.length
+  //******************* END GET NUM OF LABELS VISITED BY USERS ******************* */
+
+  //******************* GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
+  // Array of top photo labels of the user
+  var arrayOfTopPhotosLabel = []
+  
+  // Array of photo ids to associated with photos to be shown to the user as top photos
+  var arrayOfPhotoIds = []
+  
+  // Get number of labels to be shown as top labels (1/4 of the total length)
+  const numOfLabelsAsTopLabel = Math.floor(numOfLabelsVisited / 4)
+
+  console.log(numOfLabelsAsTopLabel)
+
+  // Reference the database to get top labels visited by the user
+  // Also have them ordered in descending order of visit frequency
+  const topLabelsForUser = await hbtGramPostPhotoLabelVisitModel.find({
+    user: userId
+  })
+  .sort({numOfVisits: -1})
+  .limit(2)
+
+  // Loop through that list of labels for user to get list of photo labels
+  topLabelsForUser.forEach(label => {
+    arrayOfTopPhotosLabel.push(label.visitedLabel)
+  })
+
+  // Reference the database to get list of photos associated with top labels for the user (just image id at this point)
+  const listOfTopPhotos = await hbtGramPostPhotoLabelModel.find({
+    imageLabel: {
+      $in: arrayOfTopPhotosLabel
+    }
+  })
+
+  // Loop through that list of top photos to extract their ids
+  listOfTopPhotos.forEach(photo => {
+    arrayOfPhotoIds.push(photo.imageID)
+  })
+
+  // Get num of visits of the last image label in the array of top label images
+  // so that when we start loading remaining labels, we will know where to start from
+  const numOfVisitsOfLastImageLabelInListOfTopLabel = topLabelsForUser[topLabelsForUser.length - 1].numOfVisits
+
+  // Reference the database to get list of photos associated with top labels to be shown to the user
+  // Just take 5 images each time (load more in the future)
+  const listOfTopLabelPhotos = await hbtGramPostPhotoModel.find({
+      _id: {
+          $in: arrayOfPhotoIds
+      }
+  }).limit(5)
+
+  // Add list of top label photos to the array of photos to be shown to the user
+  arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotos)
+  //******************* END GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
+
+  //******************* GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
+  // Array of photo ids of photos associated with rest of labels to be shown to the user
+  var arrayOfPhotoLabelForTheRest = []
+
+  // Array of photo ids to show to the user as rest of the photos
+  var arrayOfPhotoIdRestOfThePhotos = []
+  
+  // Reference the database to load rest of the labels visited by the user (also ordered in descending order of visit frequency)
+  // Frequency of visits here should be less than or equal to the one of top labels
+  const restOfLabelsForUser = await hbtGramPostPhotoLabelVisitModel.find({
+      user: userId,
+      numOfVisits: {
+        $lte: numOfVisitsOfLastImageLabelInListOfTopLabel
+      }
+  })
+  .sort({numOfVisits: -1})
+
+  // Loop through list of rest of the labels to get list of photo labels
+  restOfLabelsForUser.forEach(label => {
+    arrayOfPhotoLabelForTheRest.push(label.visitedLabel)
+  })
+
+  // Reference the database to get list of photos associated with rest of the labels (just image id at this point)
+  const listOfRestOfThePhotos = await hbtGramPostPhotoLabelModel.find({
+    imageLabel: {
+      $in: arrayOfPhotoLabelForTheRest
+    }
+  })
+
+  // Loop through that list of photos associated with rest of the label for user to get list of photo ids
+  listOfRestOfThePhotos.forEach(label => {
+    arrayOfPhotoIdRestOfThePhotos.push(label.imageID)
+  })
+
+  // Reference the database to get list of photos associated with rest of the labels to be shown to the user
+  // Just take 5 images each time (load more in the future)
+  const listOfRestOfTheLabelPhotos = await hbtGramPostPhotoModel.find({
+      _id: {
+          $in: arrayOfPhotoIdRestOfThePhotos
+      }
+  }).limit(5)
+
+  // Add list of photos associated with rest of the labels to the array of photos to be shown to the user
+  arrayOfPhotos = arrayOfPhotos.concat(listOfRestOfTheLabelPhotos)
+  //******************* END GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
+
+  // Return response to the client
+  response.status(200).json({
+      status: "Done",
+      data: arrayOfPhotos
+  })
+})
+//***************************** END PHOTO RECOMMEND ***************************** */

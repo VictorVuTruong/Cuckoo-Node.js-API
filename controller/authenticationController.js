@@ -132,8 +132,6 @@ exports.logout = catchAsync(async (request, respond) => {
 
 // The function to create new token so that user can use it to create new account
 exports.getSignUpToken = catchAsync(async (request, respond, next) => {
-  console.log(request.body);
-
   // Get user id from the request body
   const userId = request.body.userId;
 
@@ -288,9 +286,6 @@ exports.getUserInfoBasedOnToken = catchAsync(async (request, respond, next) => {
   // Find user by id included in the token
   const foundUser = await User.findById(decodedToken.userID);
 
-  //console.log(foundUser)
-  console.log(token);
-
   // Return the respond
   respond.status(200).json({
     status: "Done",
@@ -315,9 +310,6 @@ exports.checkToken = catchAsync(async (request, respond, next) => {
     token = request.cookies.jwt;
   }
 
-  console.log("Here is token info");
-  console.log(token);
-
   // Check if the token exists
   if (!token) {
     // If the user is not logged in the system, it also means that the user
@@ -337,8 +329,6 @@ exports.checkToken = catchAsync(async (request, respond, next) => {
       new AppError("The token belong to the user who is no longer exist", 401)
     );
   }
-
-  console.log(token);
 
   // If everything is good, return the good respond to the client app
   respond.status(200).json({

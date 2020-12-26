@@ -307,8 +307,6 @@ io.on("connection", async (socket) => {
         _id: messageId,
       };
 
-      console.log(receivedMessageObject);
-
       // Emit this event so that the client app will get update when new message is added
       io.to(`${chatRoomId}`).emit(
         "updateMessageWithPhoto",
