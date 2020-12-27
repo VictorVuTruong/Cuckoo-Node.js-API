@@ -63,8 +63,6 @@ class APIFeatures {
     orQuery = orQuery.substring(0, orQuery.length - 1);
     orQuery = orQuery.concat("]}");
 
-    console.log(JSON.parse(orQuery));
-
     // Create the query object based on the modified query string
     this.query.find(JSON.parse(orQuery));
 
