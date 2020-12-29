@@ -134,6 +134,22 @@ exports.getPostPhotosForUser = catchAsync(async (request, response, next) => {
 });
 
 //***************************** PHOTO RECOMMEND ***************************** */
+// The function to get order in collection of latest photo label in the database
+exports.getLatestPhotoLabelOrderInCollection = catchAsync(
+  async (request, response, next) => {
+    // Reference the database to get latest photo label in the collection
+    const latestPhotoLabelInCollection = await hbtGramPostPhotoLabelModel
+      .find()
+      .sort({ $natural: -1 })
+      .limit(1);
+
+    response.status(200).json({
+      status: "Done",
+      data: latestPhotoLabelInCollection[0].orderInCollection,
+    });
+  }
+);
+
 // The function to create a new hbt gram photo label visit object or just to update the existing one
 exports.createOrUpdateHBTGramPhotoLabelVisit = catchAsync(
   async (request, response, next) => {
@@ -189,8 +205,14 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   // Get the user id
   const userId = request.query.userId;
 
+  // Get current location in list for the user
+  const currentLocationInList = request.query.currentLocationInList;
+
   // Array of photos to be shown to the user
   var arrayOfPhotos = [];
+
+  // Array of order in collection of last photos of every categories
+  var arrayOfLastPhotoOrderInCollectionOfCategories = [];
 
   /* 
   We will divide this into 2 categories
@@ -225,7 +247,7 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
       user: userId,
     })
     .sort({ numOfVisits: -1 })
-    .limit(2);
+    .limit(numOfLabelsAsTopLabel);
 
   // Loop through that list of labels for user to get list of photo labels
   topLabelsForUser.forEach((label) => {
@@ -233,11 +255,16 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   });
 
   // Reference the database to get list of photos associated with top labels for the user (just image id at this point)
-  const listOfTopPhotos = await hbtGramPostPhotoLabelModel.find({
-    imageLabel: {
-      $in: arrayOfTopPhotosLabel,
-    },
-  });
+  const listOfTopPhotos = await hbtGramPostPhotoLabelModel
+    .find({
+      imageLabel: {
+        $in: arrayOfTopPhotosLabel,
+      },
+      orderInCollection: {
+        $lt: currentLocationInList,
+      },
+    })
+    .limit(5);
 
   // Loop through that list of top photos to extract their ids
   listOfTopPhotos.forEach((photo) => {
@@ -257,10 +284,21 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
         $in: arrayOfPhotoIds,
       },
     })
-    .limit(5);
+    .sort({ $natural: -1 });
 
   // Add list of top label photos to the array of photos to be shown to the user
   arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotos);
+
+  // Add last photo order in collection of this category to the array
+  // In some cases, there will be no photos in the array of photos of top labels
+  // if that happenn, add 0 to the array of last photo order in collection
+  if (listOfTopPhotos[listOfTopPhotos.length - 1] != undefined) {
+    arrayOfLastPhotoOrderInCollectionOfCategories.push(
+      listOfTopPhotos[listOfTopPhotos.length - 1].orderInCollection
+    );
+  } else {
+    arrayOfLastPhotoOrderInCollectionOfCategories.push(0);
+  }
   //******************* END GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
 
   //******************* GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
@@ -276,7 +314,7 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
     .find({
       user: userId,
       numOfVisits: {
-        $lte: numOfVisitsOfLastImageLabelInListOfTopLabel,
+        $lt: numOfVisitsOfLastImageLabelInListOfTopLabel,
       },
     })
     .sort({ numOfVisits: -1 });
@@ -287,35 +325,151 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   });
 
   // Reference the database to get list of photos associated with rest of the labels (just image id at this point)
-  const listOfRestOfThePhotos = await hbtGramPostPhotoLabelModel.find({
-    imageLabel: {
-      $in: arrayOfPhotoLabelForTheRest,
-    },
-  });
+  // Just take 5 images each time (load more in the future)
+  const listOfRestOfThePhotos = await hbtGramPostPhotoLabelModel
+    .find({
+      imageLabel: {
+        $in: arrayOfPhotoLabelForTheRest,
+      },
+      orderInCollection: {
+        $lt: currentLocationInList,
+      },
+    })
+    .limit(5);
 
   // Loop through that list of photos associated with rest of the label for user to get list of photo ids
   listOfRestOfThePhotos.forEach((label) => {
     arrayOfPhotoIdRestOfThePhotos.push(label.imageID);
   });
 
+  // Exclude pictures that are already shown in previous category
+  arrayOfPhotoIdRestOfThePhotos = arrayOfPhotoIdRestOfThePhotos.filter(
+    (x) => !arrayOfPhotoIds.includes(x)
+  );
+
   // Reference the database to get list of photos associated with rest of the labels to be shown to the user
-  // Just take 5 images each time (load more in the future)
   const listOfRestOfTheLabelPhotos = await hbtGramPostPhotoModel
     .find({
       _id: {
         $in: arrayOfPhotoIdRestOfThePhotos,
       },
     })
-    .limit(5);
+    .sort({ $natural: -1 });
 
   // Add list of photos associated with rest of the labels to the array of photos to be shown to the user
   arrayOfPhotos = arrayOfPhotos.concat(listOfRestOfTheLabelPhotos);
+
+  // Add last photo order in collection of this category to the array
+  // In some cases, there will be no photos in the array of photos of rest of the labels
+  // if that happenn, add 0 to the array of last photo order in collection
+  if (listOfRestOfThePhotos[listOfRestOfThePhotos.length - 1] != undefined) {
+    arrayOfLastPhotoOrderInCollectionOfCategories.push(
+      listOfRestOfThePhotos[listOfRestOfThePhotos.length - 1].orderInCollection
+    );
+  } else {
+    arrayOfLastPhotoOrderInCollectionOfCategories.push(0);
+  }
   //******************* END GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
+
+  // Compare order in collection of last posts in those 2 categogies
+  // Whichever smallest will be considered as user's new current location in list
+  // If there is no element in the array of collection, let new current location in list be 0
+  let newCurrentLocationInList = 0;
+
+  if (arrayOfLastPhotoOrderInCollectionOfCategories.length != 0) {
+    newCurrentLocationInList = Math.min(
+      ...arrayOfLastPhotoOrderInCollectionOfCategories
+    );
+  }
+
+  //************************* GO BACK AND GET REMAINING PHOTOS ************************** */
+  /*
+  When getting order in collection of last posts in those 3 categories
+  we may end up ignoring some other posts in between
+  Hence, go back and get them
+  */
+
+  // Array of photo ids associated with more photos to be shown to the user as top photos
+  var arrayOfMorePhotoIds = [];
+
+  // Array of photo ids associated with more photos to be shown to the user as rest of the labels photo
+  var arrayOfMorePhotoIdsRestOfTheLabel = [];
+
+  // Get more photos from top labels
+  // Only load if last post order in collection of this category is not 0
+  if (arrayOfLastPhotoOrderInCollectionOfCategories[0] != 0) {
+    // Reference the database to get list of more photos associated with top labels for the user (just image id at this point)
+    const listOfTopPhotosMore = await hbtGramPostPhotoLabelModel.find({
+      imageLabel: {
+        $in: arrayOfTopPhotosLabel,
+      },
+      orderInCollection: {
+        $lt: arrayOfLastPhotoOrderInCollectionOfCategories[0],
+        $gt: newCurrentLocationInList,
+      },
+    });
+
+    // Loop through that list of top photos to extract their ids
+    listOfTopPhotosMore.forEach((photo) => {
+      arrayOfMorePhotoIds.push(photo.imageID);
+    });
+
+    // Find photos based on list of ids
+    const listOfTopLabelPhotosMore = await hbtGramPostPhotoModel
+      .find({
+        _id: {
+          $in: arrayOfMorePhotoIds,
+        },
+      })
+      .sort({ $natural: -1 });
+
+    // Add them to array of photos for user
+    arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotosMore);
+  }
+
+  // Get more photo from rest of the labels
+  // Only load if last post order in collection of this category is not 0
+  if (arrayOfLastPhotoOrderInCollectionOfCategories != 0) {
+    // Reference the database to load rest of the labels visited by the user
+    const listOfRestOfThePhotosMore = await hbtGramPostPhotoLabelModel.find({
+      imageLabel: {
+        $in: arrayOfPhotoLabelForTheRest,
+      },
+      orderInCollection: {
+        $lt: arrayOfLastPhotoOrderInCollectionOfCategories[1],
+        $gt: newCurrentLocationInList,
+      },
+    });
+
+    // Loop through that list of top photos to extract their ids
+    listOfRestOfThePhotosMore.forEach((photo) => {
+      arrayOfMorePhotoIdsRestOfTheLabel.push(photo.imageID);
+    });
+
+    // Exclude pictures that are already shown in previous category
+    arrayOfMorePhotoIdsRestOfTheLabel = arrayOfMorePhotoIdsRestOfTheLabel.filter(
+      (x) => !arrayOfMorePhotoIds.includes(x)
+    );
+
+    // Reference the database to get list of photos associated with rest of the labels to be shown to the user
+    const listOfRestOfTheLabelPhotosMore = await hbtGramPostPhotoModel
+      .find({
+        _id: {
+          $in: arrayOfMorePhotoIdsRestOfTheLabel,
+        },
+      })
+      .sort({ $natural: -1 });
+
+    // Add them to array of photos for user
+    arrayOfPhotos = arrayOfPhotos.concat(listOfRestOfTheLabelPhotosMore);
+  }
+  //************************* END GO BACK AND GET REMAINING PHOTOS ************************** */
 
   // Return response to the client
   response.status(200).json({
     status: "Done",
     data: arrayOfPhotos,
+    newCurrentLocationInList: newCurrentLocationInList,
   });
 });
 //***************************** END PHOTO RECOMMEND ***************************** */

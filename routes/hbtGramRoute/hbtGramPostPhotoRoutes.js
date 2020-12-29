@@ -32,12 +32,17 @@ router
 // The route for getting photos for the user
 router
   .route("/getRecommendedPhotosForUser")
-  .get(hbtGramPostPhotoController.getPhotosForUser)
+  .get(hbtGramPostPhotoController.getPhotosForUser);
 
 // The route for creating or updating a hbt gram post photo label visit
 router
   .route("/createOrUpdateHBTGramPhotoLabelVisit")
-  .post(hbtGramPostPhotoController.createOrUpdateHBTGramPhotoLabelVisit)
+  .post(hbtGramPostPhotoController.createOrUpdateHBTGramPhotoLabelVisit);
+
+// THe route for getting order in collection of latest post photo in the collection
+router
+  .route("/getLatestPhotoLabelOrderInCollection")
+  .get(hbtGramPostPhotoController.getLatestPhotoLabelOrderInCollection);
 
 // Export the module
 module.exports = router;
