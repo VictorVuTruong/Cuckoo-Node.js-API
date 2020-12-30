@@ -106,14 +106,16 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       // Add order in collection of the post to the array
       arrayOfPostOrderInCollection.push(post.orderInCollection);
     });
-    
+
     // Add last post order in collection of this category to the array
     // In some cases, there will be no posts in the array of posts by top 5 users
     // if that happenn, add 0 to the array of last post order in collection
     if (arrayOfPostsForUser[arrayOfPostsForUser.length - 1] != undefined) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection)
+      arrayOfLastPosOrderInCollectionOfCategories.push(
+        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
+      );
     } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0)
+      arrayOfLastPosOrderInCollectionOfCategories.push(0);
     }
     //************************* END SHOW POSTS BY THE TOP 5 USERS ************************** */
 
@@ -169,10 +171,18 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     // Add last post order in collection of this category to the array
     // In some cases, there will be no posts in array of posts by rest of the following
     // If that happens, add 0 to the array of last post order in collection
-    if (arrayOfPostsByRestOfTheFollowings[arrayOfPostsByRestOfTheFollowings.length - 1] != undefined) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(arrayOfPostsByRestOfTheFollowings[arrayOfPostsByRestOfTheFollowings.length - 1].orderInCollection)
+    if (
+      arrayOfPostsByRestOfTheFollowings[
+        arrayOfPostsByRestOfTheFollowings.length - 1
+      ] != undefined
+    ) {
+      arrayOfLastPosOrderInCollectionOfCategories.push(
+        arrayOfPostsByRestOfTheFollowings[
+          arrayOfPostsByRestOfTheFollowings.length - 1
+        ].orderInCollection
+      );
     } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0)
+      arrayOfLastPosOrderInCollectionOfCategories.push(0);
     }
     //************************* END SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
 
@@ -225,10 +235,16 @@ exports.getAllHBTGramPostsForUser = catchAsync(
     // Add last post order in collection of this category to the array
     // In some cases, there will be no posts in array of post by users nearby
     // if that happens, add 0 to the array of last post order in collection
-    if (arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1] != undefined) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1].orderInCollection)
+    if (
+      arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1] !=
+      undefined
+    ) {
+      arrayOfLastPosOrderInCollectionOfCategories.push(
+        arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1]
+          .orderInCollection
+      );
     } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0)
+      arrayOfLastPosOrderInCollectionOfCategories.push(0);
     }
     //************************* END SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
 
@@ -258,13 +274,13 @@ exports.getAllHBTGramPostsForUser = catchAsync(
           },
           orderInCollection: {
             $lt: arrayOfLastPosOrderInCollectionOfCategories[0],
-            $gt: newCurrentLocationInList
+            $gt: newCurrentLocationInList,
           },
         })
-        .sort({ $natural: -1 })
+        .sort({ $natural: -1 });
 
       // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsForUserMore)
+      arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsForUserMore);
     }
 
     // Get more posts for rest of the following
@@ -277,13 +293,15 @@ exports.getAllHBTGramPostsForUser = catchAsync(
           },
           orderInCollection: {
             $lt: arrayOfLastPosOrderInCollectionOfCategories[1],
-            $gt: newCurrentLocationInList
+            $gt: newCurrentLocationInList,
           },
         })
         .sort({ $natural: -1 });
 
       // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsByRestOfTheFollowingsMore)
+      arrayOfPostsForUser = arrayOfPostsForUser.concat(
+        arrayOfPostsByRestOfTheFollowingsMore
+      );
     }
 
     // Get more posts for users around
@@ -296,13 +314,15 @@ exports.getAllHBTGramPostsForUser = catchAsync(
           },
           orderInCollection: {
             $lt: arrayOfLastPosOrderInCollectionOfCategories[2],
-            $gt: newCurrentLocationInList
+            $gt: newCurrentLocationInList,
           },
         })
-        .sort({ $natural: -1 })
+        .sort({ $natural: -1 });
 
       // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsWithinARadiusMore)
+      arrayOfPostsForUser = arrayOfPostsForUser.concat(
+        arrayOfPostsWithinARadiusMore
+      );
     }
     //************************* END GO BACK AND GET REMAINING POSTS ************************** */
 
@@ -332,6 +352,8 @@ exports.getHBTGramPostWithinARadius = catchAsync(
 
     // Get radius
     const radius = request.query.radius;
+
+    console.log(userLocation);
 
     // Call the function to get list of users within a radius
     const listOfUsersWithinARadius = await getUsersWithin(
@@ -365,6 +387,9 @@ exports.getHBTGramPostWithinARadius = catchAsync(
     response.status(200).json({
       status: "Done",
       data: arrayOfPostsWithinARadius,
+      newCurrentLocationInList:
+        arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1]
+          .orderInCollection,
     });
   }
 );

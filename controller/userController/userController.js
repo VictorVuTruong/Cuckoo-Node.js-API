@@ -74,6 +74,10 @@ exports.searchUser = catchAsync(async (request, response, next) => {
 
 // The middleware which is used to find restaurants within a specified radius
 exports.getUserWithin = catchAsync(async (request, respond, next) => {
+  // Get full name search query of the user
+  const fullName = request.query.fullName;
+
+  // Get location info from the search query
   const { distance, latlong, unit } = request.query;
 
   // Get the lattitude and longitude from the latlong parameter
@@ -93,6 +97,7 @@ exports.getUserWithin = catchAsync(async (request, respond, next) => {
 
   // The request body
   var requestBody = {
+    fullName: { $regex: fullName },
     location: {
       $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
     },
@@ -126,8 +131,6 @@ exports.getUserWithin = catchAsync(async (request, respond, next) => {
     status: "success",
     results: users.length,
 
-    data: {
-      data: users,
-    },
+    data: users,
   });
 });
