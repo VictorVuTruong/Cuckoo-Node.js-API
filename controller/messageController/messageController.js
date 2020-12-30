@@ -44,6 +44,7 @@ exports.createNewMessage = catchAsync(async (request, response, next) => {
   });
 
   // Return response to the client
+  // Also need to return chat room id between the 2 users
   response.status(201).json({
     status: "Message created",
     data: createdMessage,
