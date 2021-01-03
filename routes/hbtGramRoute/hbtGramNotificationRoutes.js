@@ -24,5 +24,10 @@ router
   .route("/getNotificationsForUser")
   .get(hbtGramNotificationController.getNoticationsForUser);
 
+// The route for getting order in collection of latest notification in collection
+router
+  .route("/getOrderInCollectionOfLatestNotification")
+  .get(hbtGramNotificationController.getOrderInCollectionOfLatestNotification)
+
 // Export the module
 module.exports = router;

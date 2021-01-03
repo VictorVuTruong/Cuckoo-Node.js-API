@@ -11,9 +11,17 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     required: [true, "Receiver must not be blank"],
   },
+  fromUser: {
+    type: String,
+    required: [true, "Sender must not be blank"]
+  },
   image: {
     type: String,
     required: [true, "Image URL of notification must to be blank"],
+  },
+  postId: {
+    type: String,
+    required: [true, "Post id must not be blank"]
   },
   orderInCollection: {
     type: Number,

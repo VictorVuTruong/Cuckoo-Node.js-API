@@ -1,3 +1,5 @@
+const { use } = require("../../routes/hbtGramRoute/hbtGramPostPhotoRoutes");
+
 // Import the hbt gram post model
 const hbtGramPostModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostModel`);
 
@@ -207,6 +209,9 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
 
   // Get current location in list for the user
   const currentLocationInList = request.query.currentLocationInList;
+
+  console.log(userId)
+  console.log(currentLocationInList)
 
   // Array of photos to be shown to the user
   var arrayOfPhotos = [];
