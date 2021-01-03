@@ -30,8 +30,11 @@ exports.getNoticationsForUser = catchAsync(async (request, response, next) => {
     response.status(200).json({
       status: "Done",
       data: [],
-      newCurrentLocationInList: 0
-    })
+      newCurrentLocationInList: 0,
+    });
+
+    // Get out of the function
+    return;
   }
 
   // Reference the database to get notifications for the user
@@ -44,19 +47,20 @@ exports.getNoticationsForUser = catchAsync(async (request, response, next) => {
     .sort({ $natural: -1 })
     .limit(10);
 
-  var newOrderInCollection = 0
+  var newOrderInCollection = 0;
   // If there is only one notification in the array, let 0 be new order in collection
   if (noticationsForUser.length != 1) {
     // Get order in collection for the next load (new order in collection)
-    newOrderInCollection = noticationsForUser[noticationsForUser.length - 1].orderInCollection
+    newOrderInCollection =
+      noticationsForUser[noticationsForUser.length - 1].orderInCollection;
   } else {
-    newOrderInCollection = 0
+    newOrderInCollection = 0;
   }
 
   // If there is only 1 element in the array, don't pop it
   if (noticationsForUser.length != 1) {
     // Pop last element out of the array
-    noticationsForUser.pop()
+    noticationsForUser.pop();
   }
 
   // Return response to the client
@@ -64,22 +68,22 @@ exports.getNoticationsForUser = catchAsync(async (request, response, next) => {
   response.status(200).json({
     status: "Done",
     data: noticationsForUser,
-    newCurrentLocationInList:
-      newOrderInCollection,
+    newCurrentLocationInList: newOrderInCollection,
   });
 });
 
 // The function to get order in collection of latest notification in collection
-exports.getOrderInCollectionOfLatestNotification = catchAsync(async (request, response, next) => {
-  // Reference the database to get latest notification
-  const latestNotification = await HBTGramNotificationModel
-    .find()
-    .sort({$natural: -1})
-    .limit(1)
+exports.getOrderInCollectionOfLatestNotification = catchAsync(
+  async (request, response, next) => {
+    // Reference the database to get latest notification
+    const latestNotification = await HBTGramNotificationModel.find()
+      .sort({ $natural: -1 })
+      .limit(1);
 
-  // Return response to the client
-  response.status(200).json({
-    status: "Done",
-    data: latestNotification[0].orderInCollection
-  })
-})
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: latestNotification[0].orderInCollection,
+    });
+  }
+);
