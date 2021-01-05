@@ -181,6 +181,8 @@ io.on("connection", async (socket) => {
       // Get chat room id
       const chatRoomId = data.chatRoomId;
 
+      console.log(chatRoomId);
+
       // Let user join in the room name
       socket.join(`${chatRoomId}`);
     } // If data is not JSON, parse it first
@@ -190,6 +192,8 @@ io.on("connection", async (socket) => {
 
       // Get chat room id
       const chatRoomId = chatRoomData.chatRoomId;
+
+      console.log(chatRoomId);
 
       // Let user join in the room name
       socket.join(`${chatRoomId}`);
