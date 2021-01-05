@@ -142,7 +142,7 @@ io.on("connection", async (socket) => {
     // Send user id of the comment writer as a data so that the client app know who commented the post
     socket.broadcast
       .to(socketIdOfWriter)
-      .emit("postCommented", commentObject.writer);
+      .emit("postGetCommented", commentObject.writer);
   });
 
   // Listen to event of when image is sent as a comment
