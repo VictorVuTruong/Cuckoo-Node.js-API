@@ -37,6 +37,12 @@ mongoose
 // Import the app
 const app = require(`${__dirname}/app`);
 
+// Import the notification socket model
+const notificationSocketModel = require(`${__dirname}/model/notificationSocketModel/notificationSocketModel`);
+
+// Import the post model
+const hbtGramPostModel = require(`${__dirname}/model/hbtGramModel/hbtGramPostModel`);
+
 // Start the server
 // Port number
 const port = process.env.PORT || 3000;
@@ -99,6 +105,27 @@ io.on("connection", async (socket) => {
       commentObject = JSON.parse(data);
     }
 
+    //***************** Reference the database to get info of writer of the post that get commented to send notification ***************/
+    // Get post id of the post that get commented
+    const postIdGetCommented = commentObject.postId;
+
+    // Reference the database to get post info of the post with the specified id
+    const postObjectGetCommented = await hbtGramPostModel.findOne({
+      _id: postIdGetCommented,
+    });
+
+    // Get user id of the user who created that post
+    const postWriterUserId = postObjectGetCommented.writer;
+
+    // Reference the database to get socket id of the writer (of the real time connection between writer and the server)
+    const notificationObjectOfUser = await notificationSocketModel.findOne({
+      user: postWriterUserId,
+    });
+
+    // Get socket id of the connection between post writer and the server to send notification
+    const socketIdOfWriter = notificationObjectOfUser.socketId;
+    //***************** End reference the database to get info of writer of the post that get commented to send notification ***************/
+
     // Create the new comment object based on the received comment object from the client app
     const commentObjectToEmit = {
       _id: commentObject.commentId,
@@ -106,12 +133,16 @@ io.on("connection", async (socket) => {
       content: commentObject.content,
     };
 
-    console.log(commentObjectToEmit);
-
     // Emit the event and let the client app know that new comment was created
     socket.broadcast
       .to(commentObject.postId)
       .emit("updateComment", commentObjectToEmit);
+
+    // Emit the event to the post writer client and let the writer know that post has been commented
+    // Send user id of the comment writer as a data so that the client app know who commented the post
+    socket.broadcast
+      .to(socketIdOfWriter)
+      .emit("postCommented", commentObject.writer);
   });
 
   // Listen to event of when image is sent as a comment
@@ -133,8 +164,6 @@ io.on("connection", async (socket) => {
       writer: commentObject.writer,
       content: commentObject.content,
     };
-
-    console.log(commentObjectToEmit);
 
     // Emit the event and let the client app (including the sender know that new comment with photo was created)
     io.to(commentObject.postId).emit(
@@ -351,4 +380,54 @@ io.on("connection", async (socket) => {
     }
   });
   /********************** END CHAT SERVER  ************************/
+
+  /********************** THESE ARE FOR THE NOTIFICATIONS SERVER ************************/
+  // Listen to event listener of when user jump into the notification room
+  socket.on("jumpInNotificationRoom ", async (data) => {
+    // User id
+    var userId = "";
+
+    // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
+    if (data.userId != undefined) {
+      // Get user id of user that has just joined the notification room
+      userId = data.userId;
+    } // If data is not JSON, parse it first
+    else {
+      // Parse the data if needed
+      const parsedData = JSON.parse(data);
+
+      // Get the user id
+      userId = parsedData.userId;
+    }
+
+    // Let user join in the notification room
+    socket.join("notificationRoom");
+
+    // Reference the database to see if there is a notification socket object of the user or not
+    const notificationSocketObjectOfUser = await notificationSocketModel.findOne(
+      {
+        user: userId,
+      }
+    );
+
+    // If the notification socket object of user is null, it means that it's not existed, create one
+    if (notificationSocketObjectOfUser == null) {
+      // Create notification socket object for the user
+      await notificationSocketModel.create({
+        user: userId,
+        socketId: socket.id,
+      });
+    } // Otherwise, just update it
+    else {
+      // Update the object
+      await hbtGramUserLikeInteractionModel.findByIdAndUpdate(
+        userLikeInteractionObjectBetween2Users._id,
+        {
+          user: userId,
+          socketId: socket.id,
+        }
+      );
+    }
+  });
+  /********************** END NOTIFICATIONS SERVER ************************/
 });
