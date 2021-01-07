@@ -142,7 +142,10 @@ io.on("connection", async (socket) => {
     // Send user id of the comment writer as a data so that the client app know who commented the post
     socket.broadcast
       .to(socketIdOfWriter)
-      .emit("postGetCommented", commentObject.writer);
+      .emit("postGetCommented", {
+        content: commentObject.content,
+        fromUser: commentObject.writer
+      });
   });
 
   // Listen to event of when image is sent as a comment
@@ -181,8 +184,6 @@ io.on("connection", async (socket) => {
       // Get chat room id
       const chatRoomId = data.chatRoomId;
 
-      console.log(chatRoomId);
-
       // Let user join in the room name
       socket.join(`${chatRoomId}`);
     } // If data is not JSON, parse it first
@@ -193,8 +194,6 @@ io.on("connection", async (socket) => {
       // Get chat room id
       const chatRoomId = chatRoomData.chatRoomId;
 
-      console.log(chatRoomId);
-
       // Let user join in the room name
       socket.join(`${chatRoomId}`);
     }
@@ -202,73 +201,66 @@ io.on("connection", async (socket) => {
 
   // Listen to event listener of when user send message to the database
   socket.on("newMessage", async (data) => {
+    let messageData
+    
     // If the data is already in JSON format, don't need to parse it
     if (data.sender != undefined) {
       // Get data of the message
-      const messageData = data;
+      messageData = data;
 
-      // Get sender of the message
-      const messageSender = messageData.sender;
-
-      // Get reveiver of the message
-      const messageReceiver = messageData.receiver;
-
-      // Get content of the message
-      const messageContent = messageData.content;
-
-      // Get message id of the message
-      const messageId = messageData.messageId;
-
-      // Get chat room id of the message
-      const chatRoomId = messageData.chatRoomId;
-
-      // Create the received message object out of those info
-      const receivedMessageObject = {
-        sender: messageSender,
-        receiver: messageReceiver,
-        content: messageContent,
-        chatRoomId: chatRoomId,
-        _id: messageId,
-      };
-
-      // Emit this event so that the client app will get update when new message is added
-      socket.broadcast
-        .to(`${chatRoomId}`)
-        .emit("updateMessage", receivedMessageObject);
     } // Otherwise, parse the data first
     else {
       // Get data of the message
-      const messageData = JSON.parse(data);
-
-      // Get sender of the message
-      const messageSender = messageData.sender;
-
-      // Get reveiver of the message
-      const messageReceiver = messageData.receiver;
-
-      // Get content of the message
-      const messageContent = messageData.content;
-
-      // Get message id of the message
-      const messageId = messageData.messageId;
-
-      // Get chat room id of the message
-      const chatRoomId = messageData.chatRoomId;
-
-      // Create the received message object out of those info
-      const receivedMessageObject = {
-        sender: messageSender,
-        receiver: messageReceiver,
-        content: messageContent,
-        chatRoomId: chatRoomId,
-        _id: messageId,
-      };
-
-      // Emit this event so that the client app will get update when new message is added
-      socket.broadcast
-        .to(`${chatRoomId}`)
-        .emit("updateMessage", receivedMessageObject);
+      messageData = JSON.parse(data);
     }
+
+    // Get sender of the message
+    const messageSender = messageData.sender;
+
+    // Get reveiver of the message
+    const messageReceiver = messageData.receiver;
+
+    // Get content of the message
+    const messageContent = messageData.content;
+
+    // Get message id of the message
+    const messageId = messageData.messageId;
+
+    // Get chat room id of the message
+    const chatRoomId = messageData.chatRoomId;
+
+    // Create the received message object out of those info
+    const receivedMessageObject = {
+      sender: messageSender,
+      receiver: messageReceiver,
+      content: messageContent,
+      chatRoomId: chatRoomId,
+      _id: messageId,
+    };
+
+    //******************* Reference the database to let the message receiver know that new message is added
+    // Reference the database to get socket id of the message receiver (of real time connection between message receiver and server)
+    const notificationSocketObjectOfUser = await notificationSocketModel.findOne({
+      user: messageReceiver
+    })
+
+    // Get socket id of the connection between message receiver and the server to send notification
+    const socketIdOfMessageReceiver = notificationSocketObjectOfUser.socketId
+    //******************* End reference the database to let the message receiver know that new message is added
+
+    // Emit this event so that the client app will get update when new message is added
+    socket.broadcast
+      .to(`${chatRoomId}`)
+      .emit("updateMessage", receivedMessageObject);
+
+    // Emit the event to the message receiver and let the message receiver knoww that new message is created
+    // Send message sender id so that the app know who send the message
+    socket.broadcast
+      .to(socketIdOfMessageReceiver)
+      .emit("messageReceived", {
+        content: messageContent,
+        fromUser: messageSender
+      })
   });
 
   // Listen to event of when user is typing message
@@ -374,8 +366,6 @@ io.on("connection", async (socket) => {
         _id: messageId,
       };
 
-      console.log(receivedMessageObject);
-
       // Emit this event so that the client app will get update when new message is added
       io.to(`${chatRoomId}`).emit(
         "updateMessageWithPhoto",
@@ -387,7 +377,7 @@ io.on("connection", async (socket) => {
 
   /********************** THESE ARE FOR THE NOTIFICATIONS SERVER ************************/
   // Listen to event listener of when user jump into the notification room
-  socket.on("jumpInNotificationRoom ", async (data) => {
+  socket.on("jumpInNotificationRoom", async (data) => {
     // User id
     var userId = "";
 
@@ -424,8 +414,8 @@ io.on("connection", async (socket) => {
     } // Otherwise, just update it
     else {
       // Update the object
-      await hbtGramUserLikeInteractionModel.findByIdAndUpdate(
-        userLikeInteractionObjectBetween2Users._id,
+      await notificationSocketModel.findByIdAndUpdate(
+        notificationSocketObjectOfUser._id,
         {
           user: userId,
           socketId: socket.id,
