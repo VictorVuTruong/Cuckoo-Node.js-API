@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema({
   },
   middleName: {
     type: String,
-    require: [true, "Middle name must not be blank"],
   },
   lastName: {
     type: String,
@@ -57,10 +56,6 @@ const userSchema = new mongoose.Schema({
     },
     message: "Password are not the same",
   },
-  studentId: {
-    type: String,
-    required: [true, "Student id must not be blank"],
-  },
   passwordChangedAt: {
     type: Date,
   },
@@ -69,10 +64,6 @@ const userSchema = new mongoose.Schema({
   },
   passwordResetTokenExpires: {
     type: Date,
-  },
-  classCode: {
-    type: String,
-    require: [true, "Class code must not be blank"],
   },
   avatarURL: {
     type: String,
@@ -142,9 +133,9 @@ userSchema.pre("save", async function (next) {
   this.location = {
     coordinates: [107.59148730624084, 16.46396205584513],
     description: "",
-    type: "Point"
-  }
-})
+    type: "Point",
+  };
+});
 
 // This middleware is going to combine first, middle, last name of the user together to get the full name
 userSchema.pre("save", async function (next) {

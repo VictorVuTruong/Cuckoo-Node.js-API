@@ -60,6 +60,7 @@ const createAndSendToken = (user, statusCode, request, respond) => {
 
 // The function which will be used to sign up the user
 exports.signUp = catchAsync(async (request, respond, next) => {
+  /*
   // Get the sign up token
   // It can be either from the params or the query
   var signUpToken = "";
@@ -90,6 +91,7 @@ exports.signUp = catchAsync(async (request, respond, next) => {
   if (user.registered == "yes" && user.role == "user") {
     return next(new AppError("You have already created the account", 400));
   }
+  */
 
   // If the token is valid, let the user create new account
   // Only the specified fields here are put into the database
@@ -102,10 +104,12 @@ exports.signUp = catchAsync(async (request, respond, next) => {
   // Call the function to call sign and send token to the user after sign up
   createAndSendToken(newUser, 201, request, respond);
 
+  /*
   // Update the registered field in the database to be "yes" so that the user won't be able to register again
   if (user.role == "user") {
     user.registered = "yes";
   }
+  */
 
   // Delete the signUpToken and the signUpTokenExpires property in the database. Since the
   // token is already used at this point

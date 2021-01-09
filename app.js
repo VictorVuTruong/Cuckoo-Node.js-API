@@ -91,6 +91,9 @@ const hbtGramAccountStatsRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtG
 // Router for the notifications
 const hbtGramNotificationRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramNotificationRoutes`);
 
+// Router for the friend recommendation
+const hbtGramFriendRecommendationRoutes = require(`${__dirname}/routes/hbtGramRoute/hbtGramFriendRecommendationRoutes`);
+
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
 const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
@@ -199,6 +202,12 @@ app.use("/api/v1/hbtGramAccountStats", hbtGramAccountStatsRoutes);
 
 // Use the hbtGramNotificationRoutes
 app.use("/api/v1/hbtGramNotifications", hbtGramNotificationRoutes);
+
+// Use the hbtGramFriendRecommendationRoutes
+app.use(
+  "/api/v1/hbtGramFriendRecommendation",
+  hbtGramFriendRecommendationRoutes
+);
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware

@@ -28,192 +28,58 @@ const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 // The function to get all hbt gram posts
 exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
 
-// The function to get all hbt gram posts for the user
+// The function to get posts for the user
 exports.getAllHBTGramPostsForUser = catchAsync(
   async (request, response, next) => {
     /*
-    In this sequence, we will show posts based on 3 categories
-    1. Posts by top 5 users
-    2. Posts by rest of the followings
-    3. Posts by users nearby
+    In this sequence, we will do these things to get posts for the user
+    1. Reference the database to get list of users followed by the specified user
+    2. Get posts created by those users
     */
 
-    // Array of order in collection of every posts in the first load
-    var arrayOfPostOrderInCollection = [];
+    // Array of posts for the user
+    var arrayOfPostsForUser = [];
 
-    // Array of order in collection of last posts of every category
-    var arrayOfLastPosOrderInCollectionOfCategories = [];
-
-    // Get current location in list of the user
-    const currentLocationInList = request.query.currentLocationInList;
-
-    // Get location of the user
-    const userLocation = request.query.location;
-
-    // Get radius
-    const radius = request.query.radius;
+    // Array of user ids of users followed by the specified user
+    var userIdsOfUserFollowedBySpecifiedUser = [];
 
     // Get user id of the user to get posts for
     const userId = request.query.userId;
 
-    // Array of users within a radius (will need to be modified because we will need
-    // to exclude users whose posts have been shown)
-    let arrayOfUsersWithinARadius = [];
+    // Get current location in list of the user
+    const currentLocationInList = request.query.currentLocationInList;
 
-    // Array of users interact with the specified user
-    const arrayOfUsersInteractWith = [];
+    // If new current location in list is 0, don't do anything and get out of the function
+    if (currentLocationInList == 0) {
+      response.status(200).json({
+        status: "Done",
+        data: [],
+        newCurrentLocationInList: 0,
+      });
 
-    // Array of users whose posts already been shown
-    let arrayOfUsersShown = [];
-
-    //************************* SHOW POSTS BY THE TOP 5 USERS FIRST ************************** */
-    // Reference the database to get list of uses to whom the user interact with the most (sorted in order)
-    // We will just consider the top 5 users in the list (maybe 10 or 100 in the future when we have a lot of posts)
-    const listOfUsersInteractWith = await hbtGramUserInteractionModel
-      .find({
-        user: userId,
-      })
-      .sort({ interactionFrequency: -1 })
-      .limit(5);
-
-    // Loop through that array of users interact with to extract user id of those users
-    listOfUsersInteractWith.forEach((user) => {
-      // Get user id of the user interact with the specified user
-      arrayOfUsersInteractWith.push(user.interactWith);
-
-      // Push user id to the array of users whose post already been shown
-      arrayOfUsersShown.push(user.interactWith);
-    });
-
-    // Reference the database to get list of posts created by users to whom specified user interact with the most
-    // Array of posts for the user (will be added when post for user is found)
-    // order in collection should be less then current location in list of the user
-    let arrayOfPostsForUser = await hbtGramPostModel
-      .find({
-        writer: {
-          $in: arrayOfUsersInteractWith,
-        },
-        orderInCollection: {
-          $lt: currentLocationInList,
-        },
-      })
-      .sort({ $natural: -1 })
-      .limit(5);
-
-    // Loop through the array of posts by top 5 users, get their order in collection and add them
-    // to the array of order in collection
-    arrayOfPostsForUser.forEach((post) => {
-      // Add order in collection of the post to the array
-      arrayOfPostOrderInCollection.push(post.orderInCollection);
-    });
-
-    // Add last post order in collection of this category to the array
-    // In some cases, there will be no posts in the array of posts by top 5 users
-    // if that happenn, add 0 to the array of last post order in collection
-    if (arrayOfPostsForUser[arrayOfPostsForUser.length - 1] != undefined) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(
-        arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection
-      );
-    } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0);
+      // Get out of the function
+      return;
     }
-    //************************* END SHOW POSTS BY THE TOP 5 USERS ************************** */
 
-    //************************* SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
-    // Array of user id by rest of the followings
-    let arrayOfUserIdOfRestOfFollowings = [];
-
-    // Reference the database to get list of users to whom specified user is following
-    const listOfFollowings = await hbtGramFollowModel.find({
+    /************************ GET LIST OF USER IDS OF USER FOLLOWED BY SPECIFIED USER *********************/
+    // Reference the database to get list of users followed by the specified user
+    const listOfUsersFollowedBySpecifiedUser = await hbtGramFollowModel.find({
       follower: userId,
     });
 
-    // Loop through the array of rest of followings to extract their user id
-    listOfFollowings.forEach((following) => {
-      arrayOfUserIdOfRestOfFollowings.push(following.following);
+    // Loop through that list of follow objects to extract the ids
+    listOfUsersFollowedBySpecifiedUser.forEach((follow) => {
+      userIdsOfUserFollowedBySpecifiedUser.push(follow.following);
     });
+    /************************ GET LIST OF USER IDS OF USER FOLLOWED BY SPECIFIED USER *********************/
 
-    // Exclude top 5 users from the list of followings
-    // We have list of user id of rest of followings
-    arrayOfUserIdOfRestOfFollowings = arrayOfUserIdOfRestOfFollowings.filter(
-      (x) => !arrayOfUsersInteractWith.includes(x)
-    );
-
-    // Push user id to the array of users whose post already been shown
-    arrayOfUsersShown = arrayOfUsersShown.concat(
-      arrayOfUserIdOfRestOfFollowings
-    );
-
-    // Reference the database again to get posts by rest of the followings
-    const arrayOfPostsByRestOfTheFollowings = await hbtGramPostModel
+    /************************ GET LIST OF POSTS CREATED BY USERS FOLLOWED BY THE SPECIFIED USER *********************/
+    // Reference the database to get list of posts created by the users followed by the specified user
+    // Order in collection has to be less than current location in list of the specified user
+    const arrayOfPostsCreatedByFollowingUser = await hbtGramPostModel
       .find({
         writer: {
-          $in: arrayOfUserIdOfRestOfFollowings,
-        },
-        orderInCollection: {
-          $lt: currentLocationInList,
-        },
-      })
-      .sort({ $natural: -1 });
-
-    // Concat array of posts by rest of followings with posts for the user
-    arrayOfPostsForUser = arrayOfPostsForUser.concat(
-      arrayOfPostsByRestOfTheFollowings
-    );
-
-    // Loop through list of posts by rest of the followings, get their order in collection
-    // and add them to the array of order in collection
-    arrayOfPostsByRestOfTheFollowings.forEach((post) => {
-      // Add order in collection of post to the array
-      arrayOfPostOrderInCollection.push(post.orderInCollection);
-    });
-
-    // Add last post order in collection of this category to the array
-    // In some cases, there will be no posts in array of posts by rest of the following
-    // If that happens, add 0 to the array of last post order in collection
-    if (
-      arrayOfPostsByRestOfTheFollowings[
-        arrayOfPostsByRestOfTheFollowings.length - 1
-      ] != undefined
-    ) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(
-        arrayOfPostsByRestOfTheFollowings[
-          arrayOfPostsByRestOfTheFollowings.length - 1
-        ].orderInCollection
-      );
-    } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0);
-    }
-    //************************* END SHOW POSTS BY THE REST OF FOLLOWINGS ************************** */
-
-    //************************* SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
-    // Call the function to get list of users within a radius
-    const listOfUsersWithinARadius = await getUsersWithin(
-      userLocation,
-      radius,
-      "km",
-      0
-    );
-
-    // Loop through that list of users within a radius to extract the their user id
-    listOfUsersWithinARadius.forEach((user) => {
-      // Add user id to the array of users within a radius
-      arrayOfUsersWithinARadius.push(`${user._id}`);
-    });
-
-    // Exclude all previous users from the array of users within a radius
-    // We have list of user id of users within a radius without duplicating posts
-    arrayOfUsersWithinARadius = arrayOfUsersWithinARadius.filter(
-      (x) => !arrayOfUsersShown.includes(x)
-    );
-
-    // Reference the database to get list of posts created by users who is within a specified radius
-    // Array of posts within a radius
-    // order in collection should be less then current location in list of the user
-    const arrayOfPostsWithinARadius = await hbtGramPostModel
-      .find({
-        writer: {
-          $in: arrayOfUsersWithinARadius,
+          $in: userIdsOfUserFollowedBySpecifiedUser,
         },
         orderInCollection: {
           $lt: currentLocationInList,
@@ -222,118 +88,34 @@ exports.getAllHBTGramPostsForUser = catchAsync(
       .sort({ $natural: -1 })
       .limit(5);
 
-    // Concat posts within a radius with array of posts for the user
-    arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsWithinARadius);
+    // Append it to array of posts for the user
+    arrayOfPostsForUser = arrayOfPostsForUser.concat(
+      arrayOfPostsCreatedByFollowingUser
+    );
+    /************************ GET LIST OF POSTS CREATED BY USERS FOLLOWED BY THE SPECIFIED USER *********************/
 
-    // Loop through the array of posts by users nearby, get their order in collection
-    // and add them to the array of order in collection
-    arrayOfPostsWithinARadius.forEach((post) => {
-      // Add order in collectio of post to the array
-      arrayOfPostOrderInCollection.push(post.orderInCollection);
-    });
+    // If there is no posts in the array, return 0 as new current location in list and an empty array
+    if (arrayOfPostsCreatedByFollowingUser.length == 0) {
+      response.status(200).json({
+        status: "Done",
+        data: [],
+        newCurrentLocationInList: 0,
+      });
 
-    // Add last post order in collection of this category to the array
-    // In some cases, there will be no posts in array of post by users nearby
-    // if that happens, add 0 to the array of last post order in collection
-    if (
-      arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1] !=
-      undefined
-    ) {
-      arrayOfLastPosOrderInCollectionOfCategories.push(
-        arrayOfPostsWithinARadius[arrayOfPostsWithinARadius.length - 1]
-          .orderInCollection
-      );
-    } else {
-      arrayOfLastPosOrderInCollectionOfCategories.push(0);
-    }
-    //************************* END SHOW POSTS BY USERS WITHIN A RADIUS ************************** */
-
-    // Compare order in collection of last posts in those 3 categogies
-    // Whichever smallest will be considered as user's new current location in list
-    // If there is no element in the array of collection, let new current location in list be 0
-    let newCurrentLocationInList = 0;
-
-    if (arrayOfPostOrderInCollection.length != 0) {
-      newCurrentLocationInList = Math.min(...arrayOfPostOrderInCollection);
+      // Get out of the function
+      return;
     }
 
-    //************************* GO BACK AND GET REMAINING POSTS ************************** */
-    /*
-    When getting order in collection of last posts in those 3 categories
-    we may end up ignoring some other posts in between
-    Hence, go back and get them
-    */
+    // Get order in collection of last post in the array of posts for user and let it be next location in list
+    // for the next load
+    const newCurrentLocationInList =
+      arrayOfPostsForUser[arrayOfPostsForUser.length - 1].orderInCollection;
 
-    // Get more posts from the top 5 users
-    // Only load if last post order in collection of this category is not 0
-    if (arrayOfLastPosOrderInCollectionOfCategories[0] != 0) {
-      const arrayOfPostsForUserMore = await hbtGramPostModel
-        .find({
-          writer: {
-            $in: arrayOfUsersInteractWith,
-          },
-          orderInCollection: {
-            $lt: arrayOfLastPosOrderInCollectionOfCategories[0],
-            $gt: newCurrentLocationInList,
-          },
-        })
-        .sort({ $natural: -1 });
-
-      // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(arrayOfPostsForUserMore);
-    }
-
-    // Get more posts for rest of the following
-    // Only load if last post order in collection of this category is not 0
-    if (arrayOfLastPosOrderInCollectionOfCategories[1] != 0) {
-      const arrayOfPostsByRestOfTheFollowingsMore = await hbtGramPostModel
-        .find({
-          writer: {
-            $in: arrayOfUserIdOfRestOfFollowings,
-          },
-          orderInCollection: {
-            $lt: arrayOfLastPosOrderInCollectionOfCategories[1],
-            $gt: newCurrentLocationInList,
-          },
-        })
-        .sort({ $natural: -1 });
-
-      // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(
-        arrayOfPostsByRestOfTheFollowingsMore
-      );
-    }
-
-    // Get more posts for users around
-    // Only load if last post order in collection of this category is not 0
-    if (arrayOfLastPosOrderInCollectionOfCategories[2] != 0) {
-      const arrayOfPostsWithinARadiusMore = await hbtGramPostModel
-        .find({
-          writer: {
-            $in: arrayOfUsersWithinARadius,
-          },
-          orderInCollection: {
-            $lt: arrayOfLastPosOrderInCollectionOfCategories[2],
-            $gt: newCurrentLocationInList,
-          },
-        })
-        .sort({ $natural: -1 });
-
-      // Add them to array of posts for user
-      arrayOfPostsForUser = arrayOfPostsForUser.concat(
-        arrayOfPostsWithinARadiusMore
-      );
-    }
-    //************************* END GO BACK AND GET REMAINING POSTS ************************** */
-
-    // Return response to the client app
+    // Return response to the client
     response.status(200).json({
       status: "Done",
-      results: arrayOfPostsForUser.length,
-      data: {
-        documents: arrayOfPostsForUser,
-        newCurrentLocationInList: newCurrentLocationInList,
-      },
+      data: arrayOfPostsForUser,
+      newCurrentLocationInList: newCurrentLocationInList,
     });
   }
 );
