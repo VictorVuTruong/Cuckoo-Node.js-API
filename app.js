@@ -219,5 +219,13 @@ app.use("/api/v1/messageRoom", messageRoomRouter);
 // Use the messagePhotoRouter as middleware
 app.use("/api/v1/messagePhoto", messagePhotoRouter);
 
+//-------------- ROUTES FOR THE VIDEO CHAT (WILL THEN FORMATED INTO MVC) --------------
+// Routes for redirecting user into the chat room
+app.get("/", async (request, response, next) => {
+  // Redirect user into the chat room (chat room is obtained from the client app)
+  response.redirect(`/${request.query.chatRoomId}`)
+})
+//-------------- END ROUTES FOR THE VIDEO CHAT (WILL THEN FORMATED INTO MVC) --------------
+
 // Export the app so that the server file can user it
 module.exports = app;

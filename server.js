@@ -4,8 +4,13 @@ const mongoose = require("mongoose");
 // Import the dotnev module
 const dotnev = require("dotenv");
 
+// For the socket
+var os = require('os');
+
 // Import the socketio in order to listen to real time app update
 const socketio = require("socket.io");
+const { request, response } = require("express");
+const { use } = require("./app");
 
 // Import this one in order to catch error in any async functions
 const catchAsync = require(`${__dirname}/utils/catchAsync`);
@@ -198,7 +203,7 @@ io.on(
     // Listen to event listener of when user jump into the chat room
     socket.on(
       "jumpInChatRoom",
-      catchAsync(async (data) => {
+      catchAsync(async (data) => {        
         // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
         if (data.chatRoomId != undefined) {
           // Get chat room id
@@ -416,7 +421,7 @@ io.on(
           }
         );
 
-        // If follow receiver hasn't got the socket, the socket object will be null and in that case, don't do anything and get out
+        // If follow receiver hasn't got the socket, the socket object  will be null and in that case, don't do anything and get out
         // of the function
         if (notificationSocketObjectOfUser == null) {
           return;
@@ -488,5 +493,127 @@ io.on(
       })
     );
     /********************** END NOTIFICATIONS SERVER ************************/
+
+    /********************** VIDEO CHAT SERVER ************************/
+    /*
+    Don't need to bring user into the video chat room because the join chat room function
+    already done that
+    */
+
+    // The function to stream data during the video call
+    socket.on("streamDataIn", catchAsync(async (data) => {
+      // Room id of the room that user join in
+      var chatRoomId = "";
+
+      console.log("Data in")
+
+      // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
+      if (data.chatRoomId != undefined) {
+        console.log(data)
+        // Get chat room id of the room that user just joined in
+        chatRoomId = data.chatRoomId
+      } // If data is not JSON, parse it first
+      else {
+        // Parse the data if needed
+        const parsedData = JSON.parse(data);
+
+        // Get chat room id of the room that user just joined in
+        chatRoomId = parsedData.chatRoomId
+      }
+
+      // Emit the stream data to other user
+      socket.broadcast
+        .to(`${chatRoomId}`)
+        .emit("streamDataOut", data);
+    }))
+
+    // The function to notify the user that they got some media
+    socket.on("got user media", catchAsync(async (data) => {
+      // Room id of the room that user join in
+      var chatRoomId = "";
+
+      console.log("got user media")
+
+      // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
+      if (data.chatRoomId != undefined) {
+        console.log(data)
+        // Get chat room id of the room that user just joined in
+        chatRoomId = data.chatRoomId
+      } // If data is not JSON, parse it first
+      else {
+        // Parse the data if needed
+        const parsedData = JSON.parse(data);
+
+        // Get chat room id of the room that user just joined in
+        chatRoomId = parsedData.chatRoomId
+      }
+
+      
+
+      // Emit message to the receiver
+      socket.broadcast
+        .to(`${chatRoomId}`)
+        .emit("got user media", data)
+    }))
+
+    // The function to let one more user into the room
+    socket.on("create or join", catchAsync(async (data) => {
+      // Room id of the room that user join in
+      var chatRoomId = "";
+
+      console.log("create or join")
+
+      // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
+      if (data.chatRoomId != undefined) {
+        console.log(data)
+        // Get chat room id of the room that user just joined in
+        chatRoomId = data.chatRoomId
+      } // If data is not JSON, parse it first
+      else {
+        // Parse the data if needed
+        const parsedData = JSON.parse(data);
+
+        // Get chat room id of the room that user just joined in
+        chatRoomId = parsedData.chatRoomId
+      }
+
+      // Get number of people currently in the specified room
+      var peopleInRoom = io.sockets.adapter.rooms[chatRoomId]
+      var numOfPeopleInRoom = peopleInRoom ? Object.keys(peopleInRoom.sockets).length : 0
+
+      // If current number of people in room is 0, user who emit this event is the creator of the call
+      if (numOfPeopleInRoom === 0) {
+        // Bring user in the room
+        socket.join(chatRoomId)
+
+        // Emit event to the client to let the client know that call has been initiated
+        socket
+          .to(`${chatRoomId}`)
+          .emit("created", chatRoomId)
+      } // If current number of people in room is not 0, there is someone in room already, just need to join
+      // this user in the call
+      else if (numOfPeopleInRoom === 1) {
+        // Emit event to let the client know that call is ready
+        io.sockets.in(chatRoomId).emit("join", chatRoomId)
+        io.sockets.in(chatRoomId).emit("ready")
+        socket.emit("joined", chatRoomId)
+        
+        // Let user join the room
+        socket.join(chatRoomId)
+      }
+    }))
+
+    // Additional function (helped when app is hosted on remote server)
+    socket.on("ipaddr", catchAsync(async () => {
+      var ifaces = os.networkInterfaces()
+      for (var dev in ifaces) {
+        ifaces[dev].forEach((details) => {
+          if (details.family === "IPv4" && details.address !== "127.0.0.1") {
+            socket.emit("ipaddr", details.address)
+          }
+        })
+      }
+    }))
+    /********************** END VIDEO CHAT SERVER ************************/
   })
 );
