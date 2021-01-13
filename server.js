@@ -548,8 +548,6 @@ io.on(
         chatRoomId = parsedData.chatRoomId
       }
 
-      
-
       // Emit message to the receiver
       socket.broadcast
         .to(`${chatRoomId}`)
