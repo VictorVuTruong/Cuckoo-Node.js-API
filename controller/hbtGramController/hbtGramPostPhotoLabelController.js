@@ -70,3 +70,11 @@ exports.updatePhotoLabelVisit = catchAsync(async (request, response, next) => {
     data: "Num of photo label visits updated",
   });
 });
+
+// The function to delete all photo label of the specified photo id
+exports.deleteAllPhotoLabelOfPhoto = catchAsync (async (photoId) => {
+  // Delete all photo labels of the photo
+  await hbtGramPostPhotoLabelModel.deleteMany({
+    imageID: photoId
+  })
+})

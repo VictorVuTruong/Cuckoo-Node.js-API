@@ -87,3 +87,11 @@ exports.getOrderInCollectionOfLatestNotification = catchAsync(
     });
   }
 );
+
+// The function to delete notifications belong to the post
+exports.deleteNotificationOfPost = catchAsync(async (postId) => {
+  // Delete notifications of post
+  await HBTGramNotificationModel.deleteMany({
+    postId: postId
+  })
+})

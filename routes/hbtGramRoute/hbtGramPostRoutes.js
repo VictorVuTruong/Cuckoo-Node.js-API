@@ -17,7 +17,8 @@ router.use(authenticationController.protect);
 router
   .route("/")
   .get(hbtGramPostController.getAllHBTGramPosts)
-  .post(hbtGramPostController.createNewHBTGramPost);
+  .post(hbtGramPostController.createNewHBTGramPost)
+  .delete(hbtGramPostController.deleteHBTGramPost)
 
 // The route for getting HBTGram post detail based on post id
 router

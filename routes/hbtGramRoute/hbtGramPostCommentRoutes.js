@@ -19,5 +19,10 @@ router
   .get(hbtGramPostCommentController.getAllHBTGramPostComments)
   .post(hbtGramPostCommentController.createNewHBTGramPostComment);
 
+// The router for deleting comment with a specified id
+router
+  .route("/deleteCommentWithId")
+  .delete(hbtGramPostCommentController.deleteCommentWithId)
+
 // Export the router
 module.exports = router;

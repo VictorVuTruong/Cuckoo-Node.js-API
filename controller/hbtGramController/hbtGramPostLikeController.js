@@ -96,3 +96,11 @@ exports.checkLikeStatus = catchAsync(async (request, response, next) => {
     });
   }
 });
+
+// The function to delete likes of the specified post id
+exports.deleteLikesOfPost= catchAsync(async (postId) => {
+  // Delete all likes of the specified post id
+  await hbtGramPostLikeModel.deleteMany({
+    postId: postId
+  })
+})

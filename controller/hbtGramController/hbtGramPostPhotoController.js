@@ -1,4 +1,7 @@
+/*
+const { request, response } = require("express");
 const { use } = require("../../routes/hbtGramRoute/hbtGramPostPhotoRoutes");
+*/
 
 // Import the hbt gram post model
 const hbtGramPostModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostModel`);
@@ -18,6 +21,9 @@ const factory = require(`${__dirname}/../handlerFactory`);
 // Import the catchAsync
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
+// Import the hbtGramPostPhotoLabelController
+const hbtGramPostPhotoLabelController = require(`${__dirname}/hbtGramPostPhotoLabelController`)
+
 // The function to get all hbt gram post photo
 exports.getAllHBTGramPostPhotos = factory.getAllDocuments(
   hbtGramPostPhotoModel
@@ -27,9 +33,6 @@ exports.getAllHBTGramPostPhotos = factory.getAllDocuments(
 exports.createNewHBTGramPostPhoto = factory.createDocument(
   hbtGramPostPhotoModel
 );
-
-// The function to delete a hbt gram post photo
-exports.deleteHBTGramPostPhoto = factory.deleteOne(hbtGramPostPhotoModel);
 
 // The function to get all photos posted by the specified user
 exports.getAllPhotosOfUser = catchAsync(async (request, response, next) => {
@@ -478,3 +481,33 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   });
 });
 //***************************** END PHOTO RECOMMEND ***************************** */
+
+// The function to delete a post photo based on id
+exports.deleteHBTGramPostPhoto = async (postId) => {
+  // Array of photo ids of photos belong to the specified post id
+  var arrayOfPhotoIds = []
+
+  // Array of photo URLs of photos belong to the specified post id
+  var arrayOfPhotoURLs = []
+  
+  // Reference the database to get all photos belong to the specified post id
+  const photosOfPost = await hbtGramPostPhotoModel.find({
+    postId: postId
+  })
+
+  // Loop through the obtained list of photos belong to the specified post id to get their id
+  // also to get their URLs
+  photosOfPost.forEach(photo => {
+    arrayOfPhotoIds.push(photo._id)
+    arrayOfPhotoURLs.push(photo.imageURL)
+  })
+
+  // Loop through that list of photo ids and delete all photo labels associated with them
+  for (i = 0; i < arrayOfPhotoIds.length; i++) {
+    // Call the function to delete photo labels of the specified photo id
+    await hbtGramPostPhotoLabelController.deleteAllPhotoLabelOfPhoto(arrayOfPhotoIds[i])
+  }
+
+  // Return the array of image URLs of post photos to be deleted
+  return arrayOfPhotoURLs
+}

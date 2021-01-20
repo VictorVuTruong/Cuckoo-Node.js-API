@@ -1,3 +1,6 @@
+const { request } = require("express");
+const { response } = require("../../app");
+
 // Import the hbt gram post model
 const hbtGramPostModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostModel`);
 
@@ -6,9 +9,6 @@ const User = require(`${__dirname}/../../model/userModel/userModel`);
 
 // Import the hbt gram follow model
 const hbtGramFollowModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramFollowModel`);
-
-// Import the hbt gram user interaction model
-const hbtGramUserInteractionModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramUserInteractionModel`);
 
 // Import the HBTGram post comment model
 const hbtGramPostCommentModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostCommentModel`);
@@ -19,11 +19,33 @@ const hbtGramPostLikeModel = require(`${__dirname}/../../model/hbtGramModel/hbtG
 // Import the HBTGram post photo model
 const hbtGramPostPhotoModel = require(`${__dirname}/../../model/hbtGramModel/hbtGramPostPhotoModel`);
 
+//---------------------- Controllers required to delete a post ----------------------
+// Import the post comment controller
+const hbtGramPostCommentController = require(`${__dirname}/hbtGramPostCommentController`)
+
+// Import the post like controller
+const hbtGramPostLikeController = require(`${__dirname}/hbtGramPostLikeController`)
+
+// Import the notification controller
+const hbtGramNotificationController = require(`${__dirname}/hbtGramNotificationController`)
+
+// Import the post photo controller
+const hbtGramPostPhotoController = require(`${__dirname}/hbtGramPostPhotoController`)
+
 // Import the handler factory
 const factory = require(`${__dirname}/../handlerFactory`);
 
 // Import catchAsync
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
+
+// Import the Firebase Admin SDK
+const admin = require("firebase-admin");
+
+// Imports the Google Cloud client library
+const {Storage} = require('@google-cloud/storage');
+
+// Storage object
+let storage = new Storage({keyFilename: `${__dirname}/../../HBTGram-229b40c05d35.json`})
 
 // The function to get all hbt gram posts
 exports.getAllHBTGramPosts = factory.getAllDocuments(hbtGramPostModel);
@@ -309,4 +331,97 @@ async function getUsersWithin(location, radius, unit, limit) {
 exports.createNewHBTGramPost = factory.createDocument(hbtGramPostModel);
 
 // The function to delete a hbt gram post
-exports.deleteHBTGramPost = factory.deleteOne(hbtGramPostModel);
+exports.deleteHBTGramPost = catchAsync(async (request, response, next) => {
+  // Get post id of the post to be deleted
+  const postId = request.query.postId
+
+  // The variable to keep track of if all images rated to post have been removed or not
+  var allImagesRemoved = true
+
+  // Call the function to delete comments of the specified post id
+  // Also obtain array of image URLs of photos to be deleted for the comments
+  const arrayOfPostCommentPhotosToBeDeleted = await hbtGramPostCommentController.deleteCommentsOfPost(postId)
+
+  // Call the function to delete photos belong to the post that is going to be deleted
+  // Also obtain array of image URLs of photos to be deleted for the post
+  const arrayofPostPhotosToBeDeleted = await hbtGramPostPhotoController.deleteHBTGramPostPhoto(postId)
+
+  // Call the function to delete likes of the specified post id
+  await hbtGramPostLikeController.deleteLikesOfPost(postId)
+
+  // Call the function to delete notifications of the specified post id
+  await hbtGramNotificationController.deleteNotificationOfPost(postId)
+
+  // Delete the post itself
+  await hbtGramPostModel.deleteOne({
+    _id: postId
+  })
+
+  // Loop through the list of post photos to start deleting them
+  arrayofPostPhotosToBeDeleted.forEach(imageURL => {
+    // Call the function to start deleting
+    // and check to see if image is deleted successfully or not
+    if (deletePhotoBasedOnURL(imageURL, "HBTGramPostPhotos") == 1) {
+      // Set the variable which keep track of if all images were removed or not to false
+      allImagesRemoved = false
+    }
+  })
+
+  // Loop through the list of comment photos to start deleting them
+  arrayOfPostCommentPhotosToBeDeleted.forEach(imageURL => {
+    // Call the function to start deleting 
+    // and check to see if image is deleted successfully or not
+    if (deletePhotoBasedOnURL(imageURL, "hbtGramPostCommentPhotos") == 1) {
+      // Set the variable which keep track of if all images were removed or not to false
+      allImagesRemoved = false
+    }
+  })
+
+  console.log(postId)
+
+  // Based on the allImagesRemoved variable to return the right thing
+  if (allImagesRemoved) {
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: "Post has been deleted",
+      arrayOfPostCommentPhotosToBeDeleted: arrayOfPostCommentPhotosToBeDeleted,
+      arrayofPostPhotosToBeDeleted: arrayofPostPhotosToBeDeleted
+    })
+  } else {
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: "Post has been deleted. But some images are not",
+      arrayOfPostCommentPhotosToBeDeleted: arrayOfPostCommentPhotosToBeDeleted,
+      arrayofPostPhotosToBeDeleted: arrayofPostPhotosToBeDeleted
+    })
+  }
+})
+
+// The function to delete a photo based on its URL
+function deletePhotoBasedOnURL (imageURL, parentFolder) {
+  // Index of the start point of the image name
+  var startOfName = imageURL.indexOf("%2F") + 3
+
+  // Index of the end point of the image name
+  var endOfName = imageURL.indexOf("?")
+
+  // Image name
+  let imageName = imageURL.substring(startOfName, endOfName)
+
+  // Storage bucket
+  var bucket = storage.bucket('hbtgram.appspot.com')
+
+  // Start deleting the found image
+  bucket.deleteFiles({
+    prefix: `${parentFolder}/${imageName}`
+  }, function (error) {
+    if (!error) {
+      // If there is no error, return 0
+      return 0
+    } else {
+      // If there is an error, return 1
+    }
+  })
+}

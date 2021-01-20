@@ -7,6 +7,12 @@ const dotnev = require("dotenv");
 // For the socket
 var os = require('os');
 
+// Firebase admin SDK
+var admin = require("firebase-admin");
+
+// Private key
+var serviceAccount = require(`${__dirname}/hbtgram-firebase-adminsdk-zv1hs-15f7eaf4f4.json`);
+
 // Import the socketio in order to listen to real time app update
 const socketio = require("socket.io");
 const { request, response } = require("express");
@@ -40,6 +46,13 @@ mongoose
   })
   .then((connection) => {
     console.log("Connected");
+
+    // Initialize Firebase Admin SDK
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: "https://hbtgram.firebaseio.com",
+      storageBucket: "https://console.firebase.google.com/project/hbtgram/storage/hbtgram.appspot.com/files"
+    });
   });
 
 // Import the app
