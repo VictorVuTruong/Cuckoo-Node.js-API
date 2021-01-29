@@ -4,11 +4,11 @@ const express = require("express");
 // Create new router for users
 const router = express.Router();
 
-// Import the userController module
-const userController = require(`${__dirname}/../../controller/userController/userController`);
-
 // Import the authenticationController
 const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
+
+// Import the userController module
+const userController = require(`${__dirname}/../../controller/userController/userController`);
 
 // The route for signing up
 // This route also take the sign up token in order to verify the user
@@ -27,6 +27,9 @@ router.post("/getSignUpToken", authenticationController.getSignUpToken);
 
 // The route for validating login token
 router.post("/validateLoginToken", authenticationController.checkToken);
+
+// Use the protect middleware to protect any routes beyond this point
+router.use(authenticationController.protect);
 
 // The route for getting list of users in a specified radius
 router.get("/getUserWithin", userController.getUserWithin);

@@ -16,6 +16,9 @@ const AppError = require(`${__dirname}/../utils/appError`);
 // Import this one to validate web tokens
 const { promisify } = require("util");
 
+// Firebase admin SDK
+var admin = require("firebase-admin");
+
 // Import this one to encrypt password in the database
 const crypto = require("crypto");
 const { request } = require("http");
@@ -210,57 +213,77 @@ exports.protect = catchAsync(async (request, respond, next) => {
   // Get the token if it does exist
   // Get the authorization information of the user from the header
   let token;
+  let loginMethod;
+
   if (
     request.headers.authorization &&
     request.headers.authorization.startsWith("Bearer")
   ) {
     // Get the token from the request header
     token = request.headers.authorization.split(" ")[1];
-  } // If there is no token in the headers.authorization, get it from the cookie
+    loginMethod = "api";
+  } else if (request.body.jwt) {
+    token = request.body.jwt;
+    loginMethod = "firebase";
+  }
+  // If there is no token in the headers.authorization, get it from the cookie
   else if (request.cookies.jwt) {
     // Get token from the cookie
     token = request.cookies.jwt;
+    loginMethod = "api";
   }
 
-  // Check if the token exists
-  if (!token) {
-    // If the user is not logged in the system, it also means that the user
-    return next(new AppError("You are not logged in the system", 401));
+  if (loginMethod == "api") {
+    // Check if the token exists
+    if (!token) {
+      // If the user is not logged in the system, it also means that the user
+      return next(new AppError("You are not logged in the system", 401));
+    }
+
+    // Validate the token
+    // This step is to verify if the token has been modified or expired
+    // Also decode the token to get info about the user who own the token
+    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+    // Check if the user still exist
+    const currentUser = await User.findById(decoded.userID);
+    if (!currentUser) {
+      return next(
+        // If the token belongs to the user who no longer exist, return an error to the client's app
+        new AppError("The token belong to the user who is no longer exist", 401)
+      );
+    }
+
+    // Check if user changed password after the token was provided
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return next(
+        new AppError(
+          "User has recently changed the password. Please login again"
+        ),
+        400
+      );
+    }
+  } else {
+    admin
+      .auth()
+      .verifyIdToken(token)
+      .catch((error) => {
+        return next(new AppError("Error signing in"), 500);
+      });
   }
 
-  // Validate the token
-  // This step is to verify if the token has been modified or expired
-  // Also decode the token to get info about the user who own the token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  if (loginMethod == "api") {
+    // Grant access to the user to see protected route
+    // This line of code here is VERY important because it will set the authorized user to the request.user
+    // without this, the user will have no access to any protected routes even though already logged in
+    request.user = currentUser;
 
-  // Check if the user still exist
-  const currentUser = await User.findById(decoded.userID);
-  if (!currentUser) {
-    return next(
-      // If the token belongs to the user who no longer exist, return an error to the client's app
-      new AppError("The token belong to the user who is no longer exist", 401)
-    );
+    // Grant access to the user by setting the respond.locals.user to the currently logged in user
+    // The pug template will have access to all respond.locals which will then allow it to get access to the information
+    // of the currently logged in user
+    respond.locals.user = currentUser;
   }
 
-  // Check if user changed password after the token was provided
-  if (currentUser.changedPasswordAfter(decoded.iat)) {
-    return next(
-      new AppError(
-        "User has recently changed the password. Please login again"
-      ),
-      400
-    );
-  }
-
-  // Grant access to the user to see protected route
-  // This line of code here is VERY important because it will set the authorized user to the request.user
-  // without this, the user will have no access to any protected routes even though already logged in
-  request.user = currentUser;
-
-  // Grant access to the user by setting the respond.locals.user to the currently logged in user
-  // The pug template will have access to all respond.locals which will then allow it to get access to the information
-  // of the currently logged in user
-  respond.locals.user = currentUser;
   next();
 });
 

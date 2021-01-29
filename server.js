@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const dotnev = require("dotenv");
 
 // For the socket
-var os = require('os');
+var os = require("os");
 
 // Firebase admin SDK
 var admin = require("firebase-admin");
@@ -51,7 +51,8 @@ mongoose
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
       databaseURL: "https://hbtgram.firebaseio.com",
-      storageBucket: "https://console.firebase.google.com/project/hbtgram/storage/hbtgram.appspot.com/files"
+      storageBucket:
+        "https://console.firebase.google.com/project/hbtgram/storage/hbtgram.appspot.com/files",
     });
   });
 
@@ -216,7 +217,7 @@ io.on(
     // Listen to event listener of when user jump into the chat room
     socket.on(
       "jumpInChatRoom",
-      catchAsync(async (data) => {        
+      catchAsync(async (data) => {
         // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
         if (data.chatRoomId != undefined) {
           // Get chat room id
@@ -308,6 +309,24 @@ io.on(
           content: messageContent,
           fromUser: messageSender,
         });
+
+        var message = {
+          notification: {
+            title: "Someone has sent you a message",
+            body: "Go and check out who just ping you",
+          },
+          token: socketIdOfMessageReceiver,
+        };
+
+        admin
+          .messaging()
+          .send(message)
+          .then((responseInner) => {
+            console.log("Message sent", responseInner);
+          })
+          .catch((error) => {
+            console.log("Something went wrong", error);
+          });
       })
     );
 
@@ -462,10 +481,16 @@ io.on(
         // User id
         var userId = "";
 
+        // Socket id of the user
+        var socketId = "";
+
         // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
         if (data.userId != undefined) {
           // Get user id of user that has just joined the notification room
           userId = data.userId;
+
+          // Get socket id of the user
+          socketId = data.socketId;
         } // If data is not JSON, parse it first
         else {
           // Parse the data if needed
@@ -473,6 +498,9 @@ io.on(
 
           // Get the user id
           userId = parsedData.userId;
+
+          // Get socket id of the user
+          socketId = data.socketId;
         }
 
         // Let user join in the notification room
@@ -490,7 +518,7 @@ io.on(
           // Create notification socket object for the user
           await notificationSocketModel.create({
             user: userId,
-            socketId: socket.id,
+            socketId: socketId,
           });
         } // Otherwise, just update it
         else {
@@ -499,7 +527,7 @@ io.on(
             notificationSocketObjectOfUser._id,
             {
               user: userId,
-              socketId: socket.id,
+              socketId: socketId,
             }
           );
         }
