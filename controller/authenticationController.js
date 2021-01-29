@@ -263,16 +263,7 @@ exports.protect = catchAsync(async (request, respond, next) => {
         400
       );
     }
-  } else {
-    admin
-      .auth()
-      .verifyIdToken(token)
-      .catch((error) => {
-        return next(new AppError("Error signing in"), 500);
-      });
-  }
 
-  if (loginMethod == "api") {
     // Grant access to the user to see protected route
     // This line of code here is VERY important because it will set the authorized user to the request.user
     // without this, the user will have no access to any protected routes even though already logged in
@@ -282,6 +273,13 @@ exports.protect = catchAsync(async (request, respond, next) => {
     // The pug template will have access to all respond.locals which will then allow it to get access to the information
     // of the currently logged in user
     respond.locals.user = currentUser;
+  } else {
+    admin
+      .auth()
+      .verifyIdToken(token)
+      .catch((error) => {
+        return next(new AppError("Error signing in"), 500);
+      });
   }
 
   next();
