@@ -500,7 +500,7 @@ io.on(
           userId = parsedData.userId;
 
           // Get socket id of the user
-          socketId = data.socketId;
+          socketId = parsedData.socketId;
         }
 
         // Let user join in the notification room
