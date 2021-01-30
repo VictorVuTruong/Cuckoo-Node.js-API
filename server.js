@@ -279,54 +279,17 @@ io.on(
           _id: messageId,
         };
 
-        //******************* Reference the database to let the message receiver know that new message is added
-        // Reference the database to get socket id of the message receiver (of real time connection between message receiver and server)
-        const notificationSocketObjectOfUser = await notificationSocketModel.findOne(
-          {
-            user: messageReceiver,
-          }
+        // Call the function to send notification to the message receiver
+        await sendNotification(
+          messageReceiver,
+          "Someone just messaged you",
+          "Go and check out who just ping you"
         );
-
-        // If follow receiver hasn't got the socket, the socket object will be null and in that case, don't do anything and get out
-        // of the function
-        if (notificationSocketObjectOfUser == null) {
-          return;
-        }
-
-        // Get socket id of the connection between message receiver and the server to send notification
-        const socketIdOfMessageReceiver =
-          notificationSocketObjectOfUser.socketId;
-        //******************* End reference the database to let the message receiver know that new message is added
 
         // Emit this event so that the client app will get update when new message is added
         socket.broadcast
           .to(`${chatRoomId}`)
           .emit("updateMessage", receivedMessageObject);
-
-        // Emit the event to the message receiver and let the message receiver knoww that new message is created
-        // Send message sender id so that the app know who send the message
-        socket.broadcast.to(socketIdOfMessageReceiver).emit("messageReceived", {
-          content: messageContent,
-          fromUser: messageSender,
-        });
-
-        var message = {
-          notification: {
-            title: "Someone has sent you a message",
-            body: "Go and check out who just ping you",
-          },
-          token: socketIdOfMessageReceiver,
-        };
-
-        admin
-          .messaging()
-          .send(message)
-          .then((responseInner) => {
-            console.log("Message sent", responseInner);
-          })
-          .catch((error) => {
-            console.log("Something went wrong", error);
-          });
       })
     );
 
@@ -506,33 +469,58 @@ io.on(
         // Let user join in the notification room
         socket.join("notificationRoom");
 
-        // Reference the database to see if there is a notification socket object of the user or not
-        const notificationSocketObjectOfUser = await notificationSocketModel.findOne(
+        // Reference the database to check and see if specified socket id has been registered or not
+        const notificationSocketObjectOfSocketId = await notificationSocketModel.findOne(
           {
-            user: userId,
+            socketId: socketId,
           }
         );
 
-        // If the notification socket object of user is null, it means that it's not existed, create one
-        if (notificationSocketObjectOfUser == null) {
-          // Create notification socket object for the user
+        // If the notification socket object is null, it means the specified socket id has not been registered, create one
+        // If the socket id has been registered, don't do anything
+        if (notificationSocketObjectOfSocketId == null) {
+          // Create notification socket for the socket id
           await notificationSocketModel.create({
             user: userId,
             socketId: socketId,
           });
-        } // Otherwise, just update it
-        else {
-          // Update the object
-          await notificationSocketModel.findByIdAndUpdate(
-            notificationSocketObjectOfUser._id,
-            {
-              user: userId,
-              socketId: socketId,
-            }
-          );
         }
       })
     );
     /********************** END NOTIFICATIONS SERVER ************************/
   })
 );
+
+// The function to send notification
+async function sendNotification(userId, title, content) {
+  // Reference the database to get list of notification sockets for the specified user
+  const notificationSockets = await notificationSocketModel.find({
+    user: userId,
+  });
+
+  // Loop through list of notification sockets to get the notification socket id
+  notificationSockets.forEach((notificationSocket) => {
+    // Get the socket id
+    const socketId = notificationSocket.socketId;
+
+    // Create the notification
+    var message = {
+      notification: {
+        title: title,
+        body: content,
+      },
+      token: socketId,
+    };
+
+    // Send the notification
+    admin
+      .messaging()
+      .send(message)
+      .then((responseInner) => {
+        console.log("Message sent", responseInner);
+      })
+      .catch((error) => {
+        console.log("Something went wrong", error);
+      });
+  });
+}
