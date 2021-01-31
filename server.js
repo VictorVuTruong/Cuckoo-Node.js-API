@@ -146,19 +146,12 @@ io.on(
         // Get user id of the user who created that post
         const postWriterUserId = postObjectGetCommented.writer;
 
-        // Reference the database to get socket id of the writer (of the real time connection between writer and the server)
-        const notificationObjectOfUser = await notificationSocketModel.findOne({
-          user: postWriterUserId,
-        });
-
-        // If follow receiver hasn't got the socket, the socket object will be null and in that case, don't do anything and get out
-        // of the function
-        if (notificationSocketObjectOfUser == null) {
-          return;
-        }
-
-        // Get socket id of the connection between post writer and the server to send notification
-        const socketIdOfWriter = notificationObjectOfUser.socketId;
+        // Call the function to send notification for the post writer
+        await sendNotification(
+          postWriterUserId,
+          "Some one just commented on your post",
+          "Go and check out who just commented on your post"
+        );
         //***************** End reference the database to get info of writer of the post that get commented to send notification ***************/
 
         // Create the new comment object based on the received comment object from the client app
@@ -172,13 +165,6 @@ io.on(
         socket.broadcast
           .to(commentObject.postId)
           .emit("updateComment", commentObjectToEmit);
-
-        // Emit the event to the post writer client and let the writer know that post has been commented
-        // Send user id of the comment writer as a data so that the client app know who commented the post
-        socket.broadcast.to(socketIdOfWriter).emit("postGetCommented", {
-          content: commentObject.content,
-          fromUser: commentObject.writer,
-        });
       })
     );
 
@@ -408,30 +394,12 @@ io.on(
         // Get user id of the user that get followed
         const followedUser = followData.followedUser;
 
-        //******************* Reference the database to get socket id of the user that get followed
-        // Reference the database to get socket id of the user that get followed (of real time connection between message receiver and server)
-        const notificationSocketObjectOfUser = await notificationSocketModel.findOne(
-          {
-            user: followedUser,
-          }
+        // Call the function to send notification to the message receiver
+        await sendNotification(
+          followedUser,
+          "Someone just started following you",
+          "Go and check out who just followed you"
         );
-
-        // If follow receiver hasn't got the socket, the socket object  will be null and in that case, don't do anything and get out
-        // of the function
-        if (notificationSocketObjectOfUser == null) {
-          return;
-        }
-
-        // Get socket id of the connection between user that get followed and the server to send notification
-        const socketIdOfUserGetFollowed =
-          notificationSocketObjectOfUser.socketId;
-        //******************* End reference the database to get socket id of the user that get followed
-
-        // Emit the event to the user that get followed to let the user know that there is a new follower
-        // Send follower id so that the app know who follows
-        socket.broadcast.to(socketIdOfUserGetFollowed).emit("followReceived", {
-          follower: follower,
-        });
       })
     );
     /********************** END FOLLOWING SERVER ************************/
