@@ -63,7 +63,7 @@ const app = require(`${__dirname}/app`);
 const notificationSocketModel = require(`${__dirname}/model/notificationSocketModel/notificationSocketModel`);
 
 // Import the post model
-const hbtGramPostModel = require(`${__dirname}/model/hbtGramModel/hbtGramPostModel`);
+const cuckooPostModel = require(`${__dirname}/model/cuckooModel/cuckooPostModel`);
 
 // Start the server
 // Port number
@@ -139,7 +139,7 @@ io.on(
         const postIdGetCommented = commentObject.postId;
 
         // Reference the database to get post info of the post with the specified id
-        const postObjectGetCommented = await hbtGramPostModel.findOne({
+        const postObjectGetCommented = await cuckooPostModel.findOne({
           _id: postIdGetCommented,
         });
 
@@ -394,7 +394,9 @@ io.on(
         // Get user id of the user that get followed
         const followedUser = followData.followedUser;
 
-        // Call the function to send notification to the message receiver
+        console.log(followedUser);
+
+        // Call the function to send notification to the follow receiver
         await sendNotification(
           followedUser,
           "Someone just started following you",
