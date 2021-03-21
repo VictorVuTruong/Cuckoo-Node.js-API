@@ -60,9 +60,12 @@ exports.updateMe = catchAsync(async (request, respond, next) => {
 
 // This middleware is used for searching user
 exports.searchUser = catchAsync(async (request, response, next) => {
+  // Replace "-" with " " in search query
+  let replacedSearchQuery = (request.query.fullName).replace("-", " ");
+  
   // Array of found user
   const foundUser = await User.find({
-    fullName: { $regex: request.query.fullName },
+    fullName: { $regex: replacedSearchQuery },
   });
 
   // Return response to the client

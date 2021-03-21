@@ -383,8 +383,6 @@ exports.deleteCuckooPost = catchAsync(async (request, response, next) => {
     }
   });
 
-  console.log(postId);
-
   // Based on the allImagesRemoved variable to return the right thing
   if (allImagesRemoved) {
     // Return response to the client

@@ -40,6 +40,7 @@
     "slugify": "^1.4.0",
     "socket.io": "^2.3.0",
     "stripe": "^7.0.0",
+    "twilio": "^3.58.0",
     "validator": "^13.0.0",
     "xss-clean": "^0.1.1"
   },

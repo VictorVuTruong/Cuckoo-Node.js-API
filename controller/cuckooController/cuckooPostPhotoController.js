@@ -202,30 +202,8 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   // Get current location in list for the user
   const currentLocationInList = request.query.currentLocationInList;
 
-  console.log(userId);
-  console.log(currentLocationInList);
-
   // Array of photos to be shown to the user
   var arrayOfPhotos = [];
-
-  // Array of order in collection of last photos of every categories
-  var arrayOfLastPhotoOrderInCollectionOfCategories = [];
-
-  /* 
-  We will divide this into 2 categories
-  1. Top labels (1/4 of the labels visited by the user)
-  2. Rest of the labels (3/4 remainng)
-  */
-
-  //******************* GET NUM OF LABELS VISITED BY USERS ******************* */
-  // Reference the database to get all labels visited by the users
-  const labelsVisitedByUser = await cuckooPostPhotoLabelVisitModel.find({
-    user: userId,
-  });
-
-  // Get number of labels visited by user
-  const numOfLabelsVisited = labelsVisitedByUser.length;
-  //******************* END GET NUM OF LABELS VISITED BY USERS ******************* */
 
   //******************* GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
   // Array of top photo labels of the user
@@ -234,9 +212,6 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   // Array of photo ids to associated with photos to be shown to the user as top photos
   var arrayOfPhotoIds = [];
 
-  // Get number of labels to be shown as top labels (1/4 of the total length)
-  const numOfLabelsAsTopLabel = Math.floor(numOfLabelsVisited / 4);
-
   // Reference the database to get top labels visited by the user
   // Also have them ordered in descending order of visit frequency
   const topLabelsForUser = await cuckooPostPhotoLabelVisitModel
@@ -244,37 +219,49 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
       user: userId,
     })
     .sort({ numOfVisits: -1 })
-    .limit(numOfLabelsAsTopLabel);
 
   // Loop through that list of labels for user to get list of photo labels
   topLabelsForUser.forEach((label) => {
     arrayOfTopPhotosLabel.push(label.visitedLabel);
   });
 
-  // Reference the database to get list of photos associated with top labels for the user (just image id at this point)
-  const listOfTopPhotos = await cuckooPostPhotoLabelModel
-    .find({
+  // Location for next load. Since we will load just one label each time
+  // We need to keep track of location for next load
+  var locationForNextLoad = currentLocationInList;
+
+  // We will need 5 photo ids and each photo may have several labels
+  // Hence, we will need to loop until we have 5 different image ids
+  while (arrayOfPhotoIds.length < 5) {    
+    // Reference the database to get the photo label
+    const photoLabel = await cuckooPostPhotoLabelModel.find({
       imageLabel: {
         $in: arrayOfTopPhotosLabel,
       },
       orderInCollection: {
-        $lt: currentLocationInList,
-      },
+        $lt: locationForNextLoad,
+      }
     })
-    .limit(5);
+    .sort({ orderInCollection: -1 })
+    .limit(1)
 
-  // Loop through that list of top photos to extract their ids
-  listOfTopPhotos.forEach((photo) => {
-    arrayOfPhotoIds.push(photo.imageID);
-  });
+    // If there is no more image labels, get out of the loop
+    if (photoLabel.length == 0) {
+      break
+    }
 
-  // Get num of visits of the last image label in the array of top label images
-  // so that when we start loading remaining labels, we will know where to start from
-  const numOfVisitsOfLastImageLabelInListOfTopLabel =
-    topLabelsForUser[topLabelsForUser.length - 1].numOfVisits;
+    // Check image id of this label to see if this image is already in list or not
+    // If it is not included, add this photo id to the array of photo ids for user
+    if (!arrayOfPhotoIds.includes(photoLabel[0].imageID)) {
+      arrayOfPhotoIds.push(photoLabel[0].imageID)
+    }
+
+    // Update location for next load
+    locationForNextLoad = (photoLabel[0].orderInCollection)
+  }
 
   // Reference the database to get list of photos associated with top labels to be shown to the user
   // Just take 5 images each time (load more in the future)
+  // They should also be sorted in descending order
   const listOfTopLabelPhotos = await cuckooPostPhotoModel
     .find({
       _id: {
@@ -285,188 +272,13 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
 
   // Add list of top label photos to the array of photos to be shown to the user
   arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotos);
-
-  // Add last photo order in collection of this category to the array
-  // In some cases, there will be no photos in the array of photos of top labels
-  // if that happenn, add 0 to the array of last photo order in collection
-  if (listOfTopPhotos[listOfTopPhotos.length - 1] != undefined) {
-    arrayOfLastPhotoOrderInCollectionOfCategories.push(
-      listOfTopPhotos[listOfTopPhotos.length - 1].orderInCollection
-    );
-  } else {
-    arrayOfLastPhotoOrderInCollectionOfCategories.push(0);
-  }
   //******************* END GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
-
-  //******************* GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
-  // Array of photo ids of photos associated with rest of labels to be shown to the user
-  var arrayOfPhotoLabelForTheRest = [];
-
-  // Array of photo ids to show to the user as rest of the photos
-  var arrayOfPhotoIdRestOfThePhotos = [];
-
-  // Reference the database to load rest of the labels visited by the user (also ordered in descending order of visit frequency)
-  // Frequency of visits here should be less than or equal to the one of top labels
-  const restOfLabelsForUser = await cuckooPostPhotoLabelVisitModel
-    .find({
-      user: userId,
-      numOfVisits: {
-        $lt: numOfVisitsOfLastImageLabelInListOfTopLabel,
-      },
-    })
-    .sort({ numOfVisits: -1 });
-
-  // Loop through list of rest of the labels to get list of photo labels
-  restOfLabelsForUser.forEach((label) => {
-    arrayOfPhotoLabelForTheRest.push(label.visitedLabel);
-  });
-
-  // Reference the database to get list of photos associated with rest of the labels (just image id at this point)
-  // Just take 5 images each time (load more in the future)
-  const listOfRestOfThePhotos = await cuckooPostPhotoLabelModel
-    .find({
-      imageLabel: {
-        $in: arrayOfPhotoLabelForTheRest,
-      },
-      orderInCollection: {
-        $lt: currentLocationInList,
-      },
-    })
-    .limit(5);
-
-  // Loop through that list of photos associated with rest of the label for user to get list of photo ids
-  listOfRestOfThePhotos.forEach((label) => {
-    arrayOfPhotoIdRestOfThePhotos.push(label.imageID);
-  });
-
-  // Exclude pictures that are already shown in previous category
-  arrayOfPhotoIdRestOfThePhotos = arrayOfPhotoIdRestOfThePhotos.filter(
-    (x) => !arrayOfPhotoIds.includes(x)
-  );
-
-  // Reference the database to get list of photos associated with rest of the labels to be shown to the user
-  const listOfRestOfTheLabelPhotos = await cuckooPostPhotoModel
-    .find({
-      _id: {
-        $in: arrayOfPhotoIdRestOfThePhotos,
-      },
-    })
-    .sort({ $natural: -1 });
-
-  // Add list of photos associated with rest of the labels to the array of photos to be shown to the user
-  arrayOfPhotos = arrayOfPhotos.concat(listOfRestOfTheLabelPhotos);
-
-  // Add last photo order in collection of this category to the array
-  // In some cases, there will be no photos in the array of photos of rest of the labels
-  // if that happenn, add 0 to the array of last photo order in collection
-  if (listOfRestOfThePhotos[listOfRestOfThePhotos.length - 1] != undefined) {
-    arrayOfLastPhotoOrderInCollectionOfCategories.push(
-      listOfRestOfThePhotos[listOfRestOfThePhotos.length - 1].orderInCollection
-    );
-  } else {
-    arrayOfLastPhotoOrderInCollectionOfCategories.push(0);
-  }
-  //******************* END GET PHOTOS ASSOCIATED WITH REST OF THE LABELS ******************* */
-
-  // Compare order in collection of last posts in those 2 categogies
-  // Whichever smallest will be considered as user's new current location in list
-  // If there is no element in the array of collection, let new current location in list be 0
-  let newCurrentLocationInList = 0;
-
-  if (arrayOfLastPhotoOrderInCollectionOfCategories.length != 0) {
-    newCurrentLocationInList = Math.min(
-      ...arrayOfLastPhotoOrderInCollectionOfCategories
-    );
-  }
-
-  //************************* GO BACK AND GET REMAINING PHOTOS ************************** */
-  /*
-  When getting order in collection of last posts in those 3 categories
-  we may end up ignoring some other posts in between
-  Hence, go back and get them
-  */
-
-  // Array of photo ids associated with more photos to be shown to the user as top photos
-  var arrayOfMorePhotoIds = [];
-
-  // Array of photo ids associated with more photos to be shown to the user as rest of the labels photo
-  var arrayOfMorePhotoIdsRestOfTheLabel = [];
-
-  // Get more photos from top labels
-  // Only load if last post order in collection of this category is not 0
-  if (arrayOfLastPhotoOrderInCollectionOfCategories[0] != 0) {
-    // Reference the database to get list of more photos associated with top labels for the user (just image id at this point)
-    const listOfTopPhotosMore = await cuckooPostPhotoLabelModel.find({
-      imageLabel: {
-        $in: arrayOfTopPhotosLabel,
-      },
-      orderInCollection: {
-        $lt: arrayOfLastPhotoOrderInCollectionOfCategories[0],
-        $gt: newCurrentLocationInList,
-      },
-    });
-
-    // Loop through that list of top photos to extract their ids
-    listOfTopPhotosMore.forEach((photo) => {
-      arrayOfMorePhotoIds.push(photo.imageID);
-    });
-
-    // Find photos based on list of ids
-    const listOfTopLabelPhotosMore = await cuckooPostPhotoModel
-      .find({
-        _id: {
-          $in: arrayOfMorePhotoIds,
-        },
-      })
-      .sort({ $natural: -1 });
-
-    // Add them to array of photos for user
-    arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotosMore);
-  }
-
-  // Get more photo from rest of the labels
-  // Only load if last post order in collection of this category is not 0
-  if (arrayOfLastPhotoOrderInCollectionOfCategories != 0) {
-    // Reference the database to load rest of the labels visited by the user
-    const listOfRestOfThePhotosMore = await cuckooPostPhotoLabelModel.find({
-      imageLabel: {
-        $in: arrayOfPhotoLabelForTheRest,
-      },
-      orderInCollection: {
-        $lt: arrayOfLastPhotoOrderInCollectionOfCategories[1],
-        $gt: newCurrentLocationInList,
-      },
-    });
-
-    // Loop through that list of top photos to extract their ids
-    listOfRestOfThePhotosMore.forEach((photo) => {
-      arrayOfMorePhotoIdsRestOfTheLabel.push(photo.imageID);
-    });
-
-    // Exclude pictures that are already shown in previous category
-    arrayOfMorePhotoIdsRestOfTheLabel = arrayOfMorePhotoIdsRestOfTheLabel.filter(
-      (x) => !arrayOfMorePhotoIds.includes(x)
-    );
-
-    // Reference the database to get list of photos associated with rest of the labels to be shown to the user
-    const listOfRestOfTheLabelPhotosMore = await cuckooPostPhotoModel
-      .find({
-        _id: {
-          $in: arrayOfMorePhotoIdsRestOfTheLabel,
-        },
-      })
-      .sort({ $natural: -1 });
-
-    // Add them to array of photos for user
-    arrayOfPhotos = arrayOfPhotos.concat(listOfRestOfTheLabelPhotosMore);
-  }
-  //************************* END GO BACK AND GET REMAINING PHOTOS ************************** */
 
   // Return response to the client
   response.status(200).json({
     status: "Done",
     data: arrayOfPhotos,
-    newCurrentLocationInList: newCurrentLocationInList,
+    newCurrentLocationInList: locationForNextLoad,
   });
 });
 //***************************** END PHOTO RECOMMEND ***************************** */

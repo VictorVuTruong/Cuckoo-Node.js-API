@@ -56,6 +56,8 @@ const cuckooNotificationRoutes = require(`${__dirname}/routes/cuckooMainRoute/cu
 // Router for the friend recommendation
 const cuckooFriendRecommendationRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooFriendRecommendationRoutes`);
 
+// Router for the video chat
+const cuckooVideoChatRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooVideoChatRoutes`);
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
 const messageRouter = require(`${__dirname}/routes/messageRoute/messageRoutes`);
@@ -129,6 +131,9 @@ app.use("/api/v1/cuckooNotifications", cuckooNotificationRoutes);
 
 // Use the cuckooFriendRecommendationRoutes
 app.use("/api/v1/cuckooFriendRecommendation", cuckooFriendRecommendationRoutes);
+
+// Use the cuckooVideoChatRoutes
+app.use("/api/v1/videoChat", cuckooVideoChatRoutes)
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware
