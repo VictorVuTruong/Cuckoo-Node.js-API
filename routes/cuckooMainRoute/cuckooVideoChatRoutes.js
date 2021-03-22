@@ -11,7 +11,7 @@ const cuckooVideoChatController = require(`${__dirname}/../../controller/cuckooC
 const router = express.Router();
 
 // Use the protect middleware to protect any routes beyond this point
-router.use(authenticationController.protect);
+//router.use(authenticationController.protect);
 
 // The route for getting access token to get into chat room
 router
