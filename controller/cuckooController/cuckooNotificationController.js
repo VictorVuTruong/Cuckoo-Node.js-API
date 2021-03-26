@@ -1,5 +1,11 @@
 const { request, response } = require("express");
 
+// Private key
+var serviceAccount = require(`${__dirname}/../../hbtgram-firebase-adminsdk-zv1hs-15f7eaf4f4.json`);
+
+// Firebase admin SDK
+var admin = require("firebase-admin");
+
 // Import the cuckooNotificationModel
 const cuckooNotificationModel = require(`${__dirname}/../../model/cuckooModel/cuckooNotificationModel`);
 
@@ -94,4 +100,29 @@ exports.deleteNotificationOfPost = catchAsync(async (postId) => {
   await cuckooNotificationModel.deleteMany({
     postId: postId,
   });
+});
+
+// The function to send notification
+exports.sendNotification = catchAsync(async (request, response, next) => {
+  const messageToken = request.query.messageToken;
+
+  // Create the notification
+  var message = {
+    notification: {
+      title: "title",
+      body: "body",
+    },
+    token: messageToken,
+  };
+
+  // Send the notification
+  admin
+    .messaging()
+    .send(message)
+    .then((responseInner) => {
+      console.log("Message sent", responseInner);
+    })
+    .catch((error) => {
+      console.log("Something went wrong", error);
+    });
 });

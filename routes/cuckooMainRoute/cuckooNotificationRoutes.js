@@ -29,5 +29,10 @@ router
   .route("/getOrderInCollectionOfLatestNotification")
   .get(cuckooNotificationController.getOrderInCollectionOfLatestNotification);
 
+// The route for sending notification
+router
+  .route("/sendNotification")
+  .post(cuckooNotificationController.sendNotification);
+
 // Export the module
 module.exports = router;

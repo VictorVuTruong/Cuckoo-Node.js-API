@@ -12,9 +12,6 @@ const AccessToken = require("twilio/lib/jwt/AccessToken");
 // Import catchAsync
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
-//Secret 4UTfKT7Atbxxx1qrhd1rPQtUZ4IXhkv8
-//SID SK1ed0c52df9e56d67d5be51885a7e0769
-
 // The function to grant access for user with specified user id to get into the video chat room
 exports.grantVideoChatAccess = catchAsync(async (request, response, next) => {
   // Get user id of the user requesting for token
