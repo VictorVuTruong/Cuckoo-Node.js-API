@@ -34,5 +34,15 @@ router
   .route("/sendNotification")
   .post(cuckooNotificationController.sendNotification);
 
+// The route for sending notification to user with specified user id
+router
+  .route("/sendNotificationToUserBasedOnUserId")
+  .post(cuckooNotificationController.sendNotificationToUserWithSpecifiedUserId)
+
+// The route for getting notification socket of user
+router
+  .route("/getNotificationSocket")
+  .get(cuckooNotificationController.getNotificationSocketOfUser)
+
 // Export the module
 module.exports = router;

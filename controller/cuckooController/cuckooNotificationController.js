@@ -1,13 +1,13 @@
 const { request, response } = require("express");
 
-// Private key
-var serviceAccount = require(`${__dirname}/../../hbtgram-firebase-adminsdk-zv1hs-15f7eaf4f4.json`);
-
 // Firebase admin SDK
 var admin = require("firebase-admin");
 
 // Import the cuckooNotificationModel
 const cuckooNotificationModel = require(`${__dirname}/../../model/cuckooModel/cuckooNotificationModel`);
+
+// Import the notification socket model
+const notificationSocketModel = require(`${__dirname}/../../model/notificationSocketModel/notificationSocketModel`);
 
 // Import the handler factory
 const factory = require(`${__dirname}/../handlerFactory`);
@@ -126,3 +126,71 @@ exports.sendNotification = catchAsync(async (request, response, next) => {
       console.log("Something went wrong", error);
     });
 });
+
+// The function to get notification socket of user with specified user id
+exports.getNotificationSocketOfUser = catchAsync(async (request, response, next) => {
+  // Get user id of the user
+  const userId = request.query.userId
+
+  // Reference the database to get notification socket of user with specified user id
+  const notificationSockets = await notificationSocketModel.find({
+    user: userId
+  })
+
+  // Return array of notification sockets of user with specified user id
+  response.status(200).json({
+    notificationSockets: notificationSockets
+  })
+})
+
+// The function to send notification to user with specified user id
+exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, response, next) => {
+  // Get user id of the user
+  const userId = request.query.userId
+
+  // Get notification content
+  const notificationContent = request.query.notificationContent
+
+  // Get notification title
+  const notificationTitle = request.query.notificationTitle
+
+  // Reference the database to get notification socket of user with specified user id
+  const notificationSockets = await notificationSocketModel.find({
+    user: userId
+  })
+
+  // Loop through list of notification sockets to extract their notification socket id
+  // and send notification
+  notificationSockets.forEach(notificationSocket => {
+    // Get notification socket id
+    const notificationSocketId = notificationSocket.socketId
+
+    // Create the notification
+    var message = {
+      notification: {
+        title: notificationTitle,
+        body: notificationContent,
+      },
+      token: notificationSocketId,
+    };
+
+    // Send the notification
+    admin
+      .messaging()
+      .send(message)
+      .then((responseInner) => {
+        console.log("Message sent", responseInner);
+      })
+      .catch((error) => {
+        console.log("Something went wrong", error);
+
+        response.status(500).json({
+          status: "STFU"
+        })
+      });
+  })
+
+  response.status(200).json({
+    status: "Done"
+  })
+})

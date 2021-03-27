@@ -439,6 +439,8 @@ io.on(
         // Let user join in the notification room
         socket.join("notificationRoom");
 
+        console.log(socketId)
+
         // Reference the database to check and see if specified socket id has been registered or not
         const notificationSocketObjectOfSocketId = await notificationSocketModel.findOne(
           {
