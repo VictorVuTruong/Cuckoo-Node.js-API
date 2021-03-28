@@ -39,6 +39,11 @@ router
   .route("/sendNotificationToUserBasedOnUserId")
   .post(cuckooNotificationController.sendNotificationToUserWithSpecifiedUserId)
 
+// The route for sending data notification to user with specified user id
+router
+  .route("/sendDataNotificationToUserBasedOnUserId")
+  .post(cuckooNotificationController.sendDataNotificationToUserWithSpecifiedUserId)
+
 // The route for getting notification socket of user
 router
   .route("/getNotificationSocket")

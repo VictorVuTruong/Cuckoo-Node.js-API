@@ -194,3 +194,55 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
     status: "Done"
   })
 })
+
+// The function to send data notification to user with specified user id
+exports.sendDataNotificationToUserWithSpecifiedUserId = catchAsync(async (request, response, next) => {
+  // Get user id of the user
+  const userId = request.query.userId
+
+  // Get notification content
+  const notificationContent = request.query.notificationContent
+
+  // Get notification title
+  const notificationTitle = request.query.notificationTitle
+
+  // Reference the database to get notification socket of user with specified user id
+  const notificationSockets = await notificationSocketModel.find({
+    user: userId
+  })
+
+  // Loop through list of notification sockets to extract their notification socket id
+  // and send notification
+  notificationSockets.forEach(notificationSocket => {
+    // Get notification socket id
+    const notificationSocketId = notificationSocket.socketId
+
+    // Create the notification
+    var message = {
+      data: {
+        title: notificationTitle,
+        body: notificationContent,
+      },
+      token: notificationSocketId,
+    };
+
+    // Send the notification
+    admin
+      .messaging()
+      .send(message)
+      .then((responseInner) => {
+        console.log("Message sent", responseInner);
+      })
+      .catch((error) => {
+        console.log("Something went wrong", error);
+
+        response.status(500).json({
+          status: "STFU"
+        })
+      });
+  })
+
+  response.status(200).json({
+    status: "Done"
+  })
+})
