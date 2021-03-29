@@ -53,6 +53,9 @@ const cuckooAccountStatsRoutes = require(`${__dirname}/routes/cuckooMainRoute/cu
 // Router for the notifications
 const cuckooNotificationRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooNotificationRoutes`);
 
+// Router for the notification socket
+const cuckooNotificationSocketRoutes = require(`${__dirname}/routes/cuckooNotificationSocketRoute/cuckooNotificationSocketRoutes`);
+
 // Router for the friend recommendation
 const cuckooFriendRecommendationRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooFriendRecommendationRoutes`);
 
@@ -128,6 +131,9 @@ app.use("/api/v1/cuckooAccountStats", cuckooAccountStatsRoutes);
 
 // Use the cuckooNotificationRoutes
 app.use("/api/v1/cuckooNotifications", cuckooNotificationRoutes);
+
+// Use the cuckooNotificationSocketRoutes
+app.use("/api/v1/cuckooNotificationSocket", cuckooNotificationSocketRoutes)
 
 // Use the cuckooFriendRecommendationRoutes
 app.use("/api/v1/cuckooFriendRecommendation", cuckooFriendRecommendationRoutes);
