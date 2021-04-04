@@ -446,7 +446,7 @@ io.on(
         }
 
         // If old and current socket id are not the same, we better update the current with the new one
-        if (socketId != oldSocketId && oldSocketId != "") {
+        if (socketId != oldSocketId && oldSocketId != "" && userId != "") {
           // Update the socket id
           await notificationSocketModel.findOneAndUpdate({
             userId: userId,
