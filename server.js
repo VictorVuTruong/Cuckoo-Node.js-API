@@ -417,6 +417,9 @@ io.on(
         // Socket id of the user
         var socketId = "";
 
+        // Old socket id of the user (sometimes it will be the same with current socket id and sometimes it will be different)
+        var oldSocketId = "";
+
         // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
         if (data.userId != undefined) {
           // Get user id of user that has just joined the notification room
@@ -424,6 +427,9 @@ io.on(
 
           // Get socket id of the user
           socketId = data.socketId;
+
+          // Get old socket id of the user
+          oldSocketId = data.oldSocketId;
         } // If data is not JSON, parse it first
         else {
           // Parse the data if needed
@@ -434,10 +440,19 @@ io.on(
 
           // Get socket id of the user
           socketId = parsedData.socketId;
+
+          // Get old socket id of the user
+          oldSocketId = parsedData.oldSocketId;
         }
 
-        // Let user join in the notification room
-        socket.join("notificationRoom");
+        // If old and current socket id are not the same, we better update the current with the new one
+        if (socketId != oldSocketId && oldSocketId != "") {
+          // Update the socket id
+          await notificationSocketModel.findOneAndUpdate({
+            userId: userId,
+            socketId: oldSocketId,
+          });
+        }
 
         // Reference the database to check and see if specified socket id has been registered or not
         const notificationSocketObjectOfSocketId = await notificationSocketModel.findOne(
