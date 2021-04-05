@@ -215,6 +215,8 @@ exports.protect = catchAsync(async (request, respond, next) => {
   let token;
   let loginMethod;
 
+  console.log(request.cookies.jwt);
+
   if (
     request.headers.authorization &&
     request.headers.authorization.startsWith("Bearer")

@@ -19,5 +19,10 @@ router
   .get(messagePhotoController.getAllMessagePhotos)
   .post(messagePhotoController.createNewMessagePhoto);
 
+// The route for getting message photos between the 2 users
+router
+  .route("/getMessagePhotosBetween2User")
+  .get(messagePhotoController.getMessagePhotosBetweenUsers);
+
 // Export the module
 module.exports = router;
