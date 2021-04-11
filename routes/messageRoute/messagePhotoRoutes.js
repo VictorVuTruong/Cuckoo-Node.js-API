@@ -24,5 +24,10 @@ router
   .route("/getMessagePhotosBetween2User")
   .get(messagePhotoController.getMessagePhotosBetweenUsers);
 
+// The route for getting message photos of chat room
+router
+  .route("/getMessagePhotosOfChatRoom")
+  .get(messagePhotoController.getMessagePhotosOfChatRoom);
+
 // Export the module
 module.exports = router;
