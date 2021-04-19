@@ -21,5 +21,15 @@ router
     .route("/deleteNotificationSocket")
     .delete(notificationSocketController.deleteNotificationSocket)
 
+// The route for updating notification socket
+router
+    .route("/updateNotificationSocket")
+    .patch(notificationSocketController.updateNotificationSocket)
+
+// The route for checking and creating notification socket
+router
+    .route("/checkAndCreateNotificationSocket")
+    .post(notificationSocketController.checkAndCreateNotificationSocket)
+
 // Export the module
 module.exports = router;

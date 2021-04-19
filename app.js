@@ -16,6 +16,9 @@ const userRouter = require(`${__dirname}/routes/userRoute/userRoutes`);
 // Router for the allowed users
 const allowedUserRouter = require(`${__dirname}/routes/userRoute/allowedUserRoutes`);
 
+// Router for the user block
+const userBlockRouter = require(`${__dirname}/routes/userRoute/userBlockRoutes`);
+
 //-------------- MAIN ROUTERS --------------
 // Router for the posts
 const cuckooPostRouter = require(`${__dirname}/routes/cuckooMainRoute/cuckooPostRoutes`);
@@ -91,6 +94,9 @@ app.use("/api/v1/users", userRouter);
 
 // Use the allowedUserRouter as middleware. This can be known as parent route for the allowed users
 app.use("/api/v1/allowedUsers", allowedUserRouter);
+
+// Use the user block routes
+app.use("/api/v1/userBlock", userBlockRouter)
 
 //-------------- CREATE ROUTES FOR THE MAIN ROUTES --------------
 // Use the cuckooPostRouter as middleware

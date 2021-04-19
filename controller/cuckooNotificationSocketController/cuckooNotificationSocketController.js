@@ -34,3 +34,71 @@ exports.deleteNotificationSocket = catchAsync(async (request, response, next) =>
         status: "Done",
     });
 })
+
+// The function to check and create new notification socket
+// in some cases, the user upload notification socket id that is already exist
+// if that is the case, don't do anything
+exports.checkAndCreateNotificationSocket = catchAsync(async (request, response, next) => {
+    // User id of the user to create new notification socket
+    const userId = request.query.userId
+
+    // Socket id of the socket to create
+    const socketId = request.query.socketId
+
+    // Reference the database to check and see if user id with that specified socket id is exist or not
+    const notificationSocketObject = await cuckooNotificationSocketModel.findOne({
+        user: userId,
+        socketId: socketId
+    })
+    
+    // If the notification socket object is null, it means that the socket id has not been registered
+    // if that is the case, create it
+    if (notificationSocketObject == null) {
+        await cuckooNotificationSocketModel.create({
+            user: userId,
+            socketId: socketId
+        })
+
+        // Return response to the client app
+        response.status(200).json({
+            status: "Done",
+            data: "Socket has been created"
+        })
+    } else {
+        // Return response to the client app and let the app knows that there is no need to create new socket
+        response.status(200).json({
+            status: "Done",
+            data: "There is no need to create new socket for that socket id"
+        })
+    }
+})
+
+// The function to update notification socket in case it is changed for user
+exports.updateNotificationSocket = catchAsync(async (request, response, next) => {
+    // Get user id of user that needs to update notification socket
+    const userId = request.query.userId
+    
+    // Get new socket id of the user
+    const newSocketId = request.query.newSocketId
+
+    // Get old socket id of the user
+    const oldSocketId = request.query.oldSocketId
+
+    // If the old and new socket id are not the same, update it
+    if (newSocketId != oldSocketId && oldSocketId != "" && userId != "") {
+        // Update the socket id
+        await cuckooNotificationSocketModel.findOneAndUpdate({
+            userId: userId,
+            socketId: oldSocketId
+        }, {
+            userId: userId,
+            socketId: newSocketId
+        })
+    }
+
+    // Return response to the client
+    response.status(200).json({
+        status: "Done",
+        data: "Notification socket has been updated"
+    })
+})
