@@ -1,6 +1,9 @@
 // Import the message model
 const Message = require(`${__dirname}/../../model/messageModel/messageModel`);
 
+// Import the user block model
+const userBlockModel = require(`${__dirname}/../../model/userModel/userBlockModel`)
+
 // Import the message room model
 const MessageRoom = require(`${__dirname}/../../model/messageModel/messageRoomModel`);
 
@@ -18,6 +21,46 @@ exports.getAllMessages = factory.getAllDocuments(Message);
 
 // This middleware is used for creating new message
 exports.createNewMessage = catchAsync(async (request, response, next) => {
+  // Reference the database to check and see if sender is blocking receiver or not
+  const userBlockObjectSenderBlockReceiver = await userBlockModel.findOne({
+    user: request.body.receiver,
+    blockedBy: request.body.sender
+  })
+
+  // {"sender": "5f8e21ae60cf000034c63a21", "receiver": "5fd6a2deb582d10504355a72"}
+
+  // If the user block object is not null, sender is blocking receiver
+  // get out of the function and return a response to sender
+  if (userBlockObjectSenderBlockReceiver != null) {    
+    // Return response to sender and let sender know that message cannot be sent
+    response.status(200).json({
+      status: "Not sent. Is blocking receiver",
+      data: "You are blocking receiver"
+    })
+
+    // Get out of the function
+    return
+  }
+
+  // Reference the database to check and see if sender is being blocked by receiver or not
+  const userBlockObjectReceiverBlockSender = await userBlockModel.findOne({
+    user: request.body.sender,
+    blockedBy: request.body.receiver
+  })
+
+  // If the user block object is not null, sender is being blocked by receiver
+  // get out of the function and return a response to the sender
+  if (userBlockObjectReceiverBlockSender != null) {
+    // Return response to the sender
+    response.status(200).json({
+      status: "Not sent. Is being blocked by receiver",
+      data: "You are being blocked by receiver"
+    })
+
+    // Get out of the function
+    return
+  } 
+  
   // Reference the database to get room id which include the 2 users
   const arrayOfMessageRoom = await MessageRoom.find({
     $or: [
