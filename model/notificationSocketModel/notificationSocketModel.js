@@ -11,6 +11,10 @@ const notificationSocketSchema = new mongoose.Schema({
     type: String,
     required: [true, "Socket id must not be blank"],
   },
+  deviceModel: {
+    type: String,
+    required: [true, "Device model must not be blank"]
+  }
 });
 
 // Notification socket schema model based on the schema that we created

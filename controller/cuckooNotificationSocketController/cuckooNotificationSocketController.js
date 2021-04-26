@@ -20,13 +20,17 @@ exports.deleteNotificationSocket = catchAsync(async (request, response, next) =>
     // Get user id of the user to remove socket
     const userId = request.query.userId
 
+    // Get device model of the device to remove socket
+    const deviceModel = request.query.deviceModel
+
     // Get socket id of the socket to remove socket
     const socketId = request.query.socketId
 
     // Delete the found socket
     await cuckooNotificationSocketModel.deleteOne({
         user: userId,
-        socketId: socketId
+        socketId: socketId,
+        deviceModel: deviceModel
     })
 
     // Return response to the client app
@@ -76,22 +80,38 @@ exports.checkAndCreateNotificationSocket = catchAsync(async (request, response, 
 // The function to update notification socket in case it is changed for user
 exports.updateNotificationSocket = catchAsync(async (request, response, next) => {
     // Get user id of user that needs to update notification socket
-    const userId = request.query.userId
+    const userId = request.body.userId
+
+    // Get device model that needs to update notification socket
+    const deviceModel = request.body.deviceModel
     
     // Get new socket id of the user
-    const newSocketId = request.query.newSocketId
+    const newSocketId = request.body.socketId
 
-    // Get old socket id of the user
-    const oldSocketId = request.query.oldSocketId
+    // Reference the database to check and see if specified device model and user here
+    // has been registered or not
+    const socketObjectOfUser = await cuckooNotificationSocketModel.findOne({
+        user: userId,
+        deviceModel: deviceModel
+    })
 
-    // If the old and new socket id are not the same, update it
-    if (newSocketId != oldSocketId && oldSocketId != "" && userId != "") {
-        // Update the socket id
+    // If the socket object is not null, it means that socket has been registered for that user and device
+    // we just need to update it
+    if (socketObjectOfUser != null) {
+        // Update the socket
         await cuckooNotificationSocketModel.findOneAndUpdate({
-            userId: userId,
-            socketId: oldSocketId
+            user: userId,
+            deviceModel: deviceModel
         }, {
-            userId: userId,
+            user: userId,
+            deviceModel: deviceModel,
+            socketId: newSocketId
+        })
+    } else {
+        // Otherwise, create one
+        await cuckooNotificationSocketModel.create({
+            user: userId,
+            deviceModel: deviceModel,
             socketId: newSocketId
         })
     }
