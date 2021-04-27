@@ -9,6 +9,9 @@ const cuckooNotificationModel = require(`${__dirname}/../../model/cuckooModel/cu
 // Import the notification socket model
 const notificationSocketModel = require(`${__dirname}/../../model/notificationSocketModel/notificationSocketModel`);
 
+// Import the user model
+const userModel = require(`${__dirname}/../../model/userModel/userModel`)
+
 // Import the handler factory
 const factory = require(`${__dirname}/../handlerFactory`);
 
@@ -145,34 +148,74 @@ exports.getNotificationSocketOfUser = catchAsync(async (request, response, next)
 
 // The function to send notification to user with specified user id
 exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, response, next) => {
-  // Get user id of the user
-  const userId = request.query.userId
+  // User id of the user
+  let userId
 
-  // Get notification content
-  const notificationContent = request.query.notificationContent
+  // Notification content
+  let notificationContent
 
-  // Get notification title
-  const notificationTitle = request.query.notificationTitle
+  // Notification title
+  let notificationTitle
+
+  // Check and see if request.query is null or not
+  // it it is not, get info from the request.query
+  if (request.query) {
+    // Get user id of the user
+    userId = request.query.userId
+
+    // Get notification content
+    notificationContent = request.query.notificationContent
+
+    // Get notification title
+    notificationTitle = request.query.notificationTitle
+  } // Otherwise, get it from the request.body
+  else {
+    // Get user id of the user
+    userId = request.body.userId
+
+    // Get notification content
+    notificationContent = request.body.notificationContent
+
+    // Get notification title
+    notificationTitle = request.body.notificationTitle
+  }
 
   // Reference the database to get notification socket of user with specified user id
   const notificationSockets = await notificationSocketModel.find({
     user: userId
   })
-
+  
   // Loop through list of notification sockets to extract their notification socket id
   // and send notification
-  notificationSockets.forEach(notificationSocket => {
+  for (i = 0; i < notificationSockets.length; i++) {
     // Get notification socket id
-    const notificationSocketId = notificationSocket.socketId
+    const notificationSocketId = notificationSockets[i].socketId
 
-    // Create the notification
-    var message = {
-      notification: {
-        title: notificationTitle,
-        body: notificationContent,
-      },
-      token: notificationSocketId,
-    };
+    // The notification object to be sent
+    var message = null
+
+    // If title of the notification is message, let the receiver know that there is new message
+    if (notificationTitle == "message") {
+      // Get user id of sender of the message
+      const sender = notificationContent.split("-")[0]
+
+      // Get content of the message
+      const messageContent = notificationContent.split("-")[1]
+
+      // Reference the database to get info of sender
+      const messageSenderUserObject = await userModel.findOne({
+        _id: sender
+      })
+
+      // Create the notification
+      message = {
+        notification: {
+          title: `${messageSenderUserObject.fullName} has sent you a message`,
+          body: messageContent,
+        },
+        token: notificationSocketId,
+      };
+    }
 
     // Send the notification
     admin
@@ -188,7 +231,7 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
           status: "STFU"
         })
       });
-  })
+  }
 
   response.status(200).json({
     status: "Done"

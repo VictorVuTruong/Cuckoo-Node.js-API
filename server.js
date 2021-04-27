@@ -265,13 +265,6 @@ io.on(
           _id: messageId,
         };
 
-        // Call the function to send notification to the message receiver
-        await sendNotification(
-          messageReceiver,
-          "Someone just messaged you",
-          "Go and check out who just ping you"
-        );
-
         // Emit this event so that the client app will get update when new message is added
         socket.broadcast
           .to(`${chatRoomId}`)
