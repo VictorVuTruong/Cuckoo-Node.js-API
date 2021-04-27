@@ -222,10 +222,11 @@ exports.protect = catchAsync(async (request, respond, next) => {
     // Get the token from the request header
     token = request.headers.authorization.split(" ")[1];
     loginMethod = "api";
-  } else if (request.body.jwt) {
-    token = request.body.jwt;
-    loginMethod = "firebase";
   }
+  // } else if (request.body.jwt) {
+  //   token = request.body.jwt;
+  //   loginMethod = "firebase";
+  // }
   // If there is no token in the headers.authorization, get it from the cookie
   else if (request.cookies.jwt) {
     // Get token from the cookie
