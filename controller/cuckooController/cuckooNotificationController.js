@@ -157,9 +157,13 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
   // Notification title
   let notificationTitle
 
+  // User id of the notification sender
+  let notificationSender
+
   // Check and see if request.query is null or not
   // it it is not, get info from the request.query
-  if (request.query) {
+  if (request.query.userId != undefined) {
+
     // Get user id of the user
     userId = request.query.userId
 
@@ -168,6 +172,9 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
 
     // Get notification title
     notificationTitle = request.query.notificationTitle
+
+    // Get notification sender
+    notificationSender = request.query.notificationSender
   } // Otherwise, get it from the request.body
   else {
     // Get user id of the user
@@ -178,6 +185,9 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
 
     // Get notification title
     notificationTitle = request.body.notificationTitle
+
+    // Get notification sender
+    notificationSender = request.body.notificationSender
   }
 
   // Reference the database to get notification socket of user with specified user id
@@ -192,26 +202,29 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
     const notificationSocketId = notificationSockets[i].socketId
 
     // The notification object to be sent
-    var message = null
+    let message
 
     // If title of the notification is message, let the receiver know that there is new message
     if (notificationTitle == "message") {
-      // Get user id of sender of the message
-      const sender = notificationContent.split("-")[0]
-
-      // Get content of the message
-      const messageContent = notificationContent.split("-")[1]
-
       // Reference the database to get info of sender
       const messageSenderUserObject = await userModel.findOne({
-        _id: sender
+        _id: notificationSender
       })
 
       // Create the notification
       message = {
         notification: {
           title: `${messageSenderUserObject.fullName} has sent you a message`,
-          body: messageContent,
+          body: notificationContent,
+        },
+        token: notificationSocketId,
+      };
+    } else {
+      // Create the notification
+      message = {
+        notification: {
+          title: notificationTitle,
+          body: notificationContent,
         },
         token: notificationSocketId,
       };
