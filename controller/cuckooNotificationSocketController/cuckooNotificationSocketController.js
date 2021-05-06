@@ -79,14 +79,35 @@ exports.checkAndCreateNotificationSocket = catchAsync(async (request, response, 
 
 // The function to update notification socket in case it is changed for user
 exports.updateNotificationSocket = catchAsync(async (request, response, next) => {
-    // Get user id of user that needs to update notification socket
-    const userId = request.body.userId
+    // User id of user that needs to update notification socket
+    let userId
 
-    // Get device model that needs to update notification socket
-    const deviceModel = request.body.deviceModel
+    // Device model that needs to update notification socket
+    let deviceModel
+
+    // New socket id of the user
+    let newSocketId
     
-    // Get new socket id of the user
-    const newSocketId = request.body.socketId
+    // These information may come either from model or query
+    if (request.body.userId != undefined) {
+        // Get user id of user that needs to update notification socket from body
+        userId = request.body.userId
+
+        // Get device model that needs to update notification socket from body
+        deviceModel = request.body.deviceModel
+        
+        // Get new socket id of the user from body
+        newSocketId = request.body.socketId
+    } else {
+        // Get user id of user that needs to update notification socket from query
+        userId = request.query.userId
+
+        // Get device model that needs to update notification socket from query
+        deviceModel = request.query.deviceModel
+        
+        // Get new socket id of the user from query
+        newSocketId = request.query.socketId
+    }
 
     // Reference the database to check and see if specified device model and user here
     // has been registered or not
