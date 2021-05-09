@@ -1,8 +1,11 @@
 # Cuckoo-Node.js-API
 
 # About Cuckoo
-This is the social network that is capable of doing several basic functionalities of existing social networking app such as Instagram, Tinder, Snapchat <br>
-This is the server as well as API of the Cuckoo social network, this social network will also support other platforms such as iOS and Web. <br>
+This is the simple Android app for the social network that is capable of doing several basic functionalities of existing social networking app such as Instagram, Tinder, Snapchat <br>
+This consists of 3 components:
+1. Android App: https://github.com/VuNTruong/Cuckoo-Kotlin-Android.git
+2. iOS App: https://github.com/VuNTruong/Cuckoo-Swift-iOS.git
+3. Server and API: https://github.com/VuNTruong/Cuckoo-Node.js-API.git
 
 # Basic functionalities includes:
 1. Posting photos (every posts created must have a photo attached to it. Multiple photos can be chosen for a single post) <br>
