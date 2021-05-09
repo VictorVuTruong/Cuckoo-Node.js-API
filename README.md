@@ -9,14 +9,20 @@ This is the server as well as API of the Cuckoo social network, this social netw
 2. Commenting, Liking posts (photos can be used as comments)
 3. Following and unfollowing other users. Once followed, user will see be able to see posts from that followed user in the feed
 4. Messaging (photos can be sent as message)
-5. See locations of following users
-6. Update location
-7. Explore recommended photos (currently working but need more fixes on the backend)
-8. Explore users around current location
-9. Explore posts around current location
-10. See activity summary (see who interact with you the most, who like your posts the most, who comment your posts the most, who visit your profile the most)
+5. Video and audio calling
+6. See locations of following users
+7. Update location
+8. Explore recommended photos (currently working but need more fixes on the backend)
+9. Explore users around current location
+10. Explore posts around current location
+11. See activity summary (see who interact with you the most, who like your posts the most, who comment your posts the most, who visit your profile the most)
 
 # Technologies used:
-1. Server environment: Node.js JavaScript runtime environment and Express.js web app framework <br>
-2. Realtime communication and updates: SocketIO
-3. 
+1. Hosting service: Heroku
+2. Server environment: Node.js JavaScript runtime environment and Express.js web app framework <br>
+3. Realtime communication and updates: SocketIO
+4. Video and audio calling: Twillio Programmable Video
+5. Locations: MongoDB Geospatial
+6. Media storage: Google Cloud Storage
+7. Image recognitions (used when the app need to predict user's search trend): Firebase Machine Learning
+8. Database: MongoDB with Mongoose as a supplement (Mongoose is an a object data modeling for MongoDB and Node.js)
