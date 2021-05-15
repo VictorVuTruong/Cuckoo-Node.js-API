@@ -12,16 +12,9 @@ const crypto = require("crypto");
 
 // User schema
 const userSchema = new mongoose.Schema({
-  firstName: {
+  firebaseUID: {
     type: String,
-    require: [true, "First name must not be blank"],
-  },
-  middleName: {
-    type: String,
-  },
-  lastName: {
-    type: String,
-    require: [true, "Last name must not be blank"],
+    required: [true, "Firebase UID must not be blank"]
   },
   fullName: {
     type: String,
@@ -33,28 +26,12 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail],
   },
-  role: {
-    type: String,
-    enum: ["user", "teacher", "admin"],
-    required: [true, "Select a role"],
-  },
   password: {
     type: String,
     required: [true, "Password must not be blank"],
     minlength: 8,
     // Don't want to send password data to the client
     select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    required: [true, "Password confirm must not be blank"],
-    validate: {
-      // This only works on save()
-      validator: function (element) {
-        return element === this.password; // To validate that the confirm password field is match with the password
-      },
-    },
-    message: "Password are not the same",
   },
   passwordChangedAt: {
     type: Date,
@@ -74,22 +51,6 @@ const userSchema = new mongoose.Schema({
     require: [true, "Cover URL must not be blank"],
   },
   phoneNumber: {
-    type: String,
-    default: "",
-  },
-  facebook: {
-    type: String,
-    default: "",
-  },
-  instagram: {
-    type: String,
-    default: "",
-  },
-  twitter: {
-    type: String,
-    default: "",
-  },
-  zalo: {
     type: String,
     default: "",
   },
@@ -121,9 +82,7 @@ userSchema.pre("save", async function (next) {
 
   // Hash the password
   this.password = await bcrypt.hash(this.password, 12);
-
-  // Delete the passwordConfirm field
-  this.passwordConfirm = undefined;
+  
   next();
 });
 
@@ -135,13 +94,6 @@ userSchema.pre("save", async function (next) {
     description: "",
     type: "Point",
   };
-});
-
-// This middleware is going to combine first, middle, last name of the user together to get the full name
-userSchema.pre("save", async function (next) {
-  // Combine first, middle, last name to get the full name
-  this.fullName = `${this.lastName} ${this.middleName} ${this.firstName}`;
-  next();
 });
 
 // This middleware is to check if the password of the user has been changed during data modification or not

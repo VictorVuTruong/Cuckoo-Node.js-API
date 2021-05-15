@@ -209,11 +209,19 @@ exports.getLatestPostOrderInCollection = catchAsync(
       .limit(1)
       .sort({ $natural: -1 });
 
-    // Return response to the client app
-    response.status(200).json({
-      status: "Done",
-      data: latestPostObjet[0].orderInCollection,
-    });
+    if (latestPostObjet[0] == undefined) {
+      // Return response to the client app
+      response.status(200).json({
+        status: "Done",
+        data: 0,
+      });
+    } else {
+      // Return response to the client app
+      response.status(200).json({
+        status: "Done",
+        data: latestPostObjet[0].orderInCollection,
+      });
+    }
   }
 );
 

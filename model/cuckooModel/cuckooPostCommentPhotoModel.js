@@ -1,8 +1,8 @@
 // Require mongoose package
 const mongoose = require("mongoose");
 
-// Create schema for the hbt gram post comment photo object
-const hbtGramPostCommentPhotoSchema = new mongoose.Schema({
+// Create schema for the Cuckoo post comment photo object
+const cuckooPostCommentPhotoSchema = new mongoose.Schema({
   imageURL: {
     type: String,
     required: [true, "Image URL must not be blank"],
@@ -14,10 +14,10 @@ const hbtGramPostCommentPhotoSchema = new mongoose.Schema({
 });
 
 // Create the object out of the schema
-const HBTGramPostCommentPhoto = mongoose.model(
-  "HBTGramPostCommentPhoto",
-  hbtGramPostCommentPhotoSchema
+const CuckooPostCommentPhoto = mongoose.model(
+  "CuckooPostCommentPhoto",
+  cuckooPostCommentPhotoSchema
 );
 
 // Export the model
-module.exports = HBTGramPostCommentPhoto;
+module.exports = CuckooPostCommentPhoto;

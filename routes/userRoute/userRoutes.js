@@ -7,14 +7,18 @@ const router = express.Router();
 // Import the authenticationController
 const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
 
+// Import the Firebase authentication controller
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`)
+
 // Import the userController module
 const userController = require(`${__dirname}/../../controller/userController/userController`);
 
 // The route for signing up
 // This route also take the sign up token in order to verify the user
-router.post("/signup/:token", authenticationController.signUp);
+//router.post("/signup/:token", authenticationController.signUp);
+
 // Alternate route for signing up
-router.post("/signup", authenticationController.signUp);
+router.post("/signup", firebaseAuthenticationController.signUp);
 
 // The route for logging in
 router.post("/login", authenticationController.login);
@@ -26,10 +30,10 @@ router.post("/logout", authenticationController.logout);
 router.post("/getSignUpToken", authenticationController.getSignUpToken);
 
 // The route for validating login token
-router.post("/validateLoginToken", authenticationController.checkToken);
+router.post("/validateLoginToken", firebaseAuthenticationController.checkToken);
 
 // Use the protect middleware to protect any routes beyond this point
-router.use(authenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting list of users in a specified radius
 router.get("/getUserWithin", userController.getUserWithin);
@@ -44,13 +48,10 @@ router.get("/searchUser", userController.searchUser);
 // The route for updating info of the user (by the user based on jwt sent to server from client app)
 router.patch("/updateMe", userController.updateMe);
 
-// With this middleware being used. All routes that come after this point will be protected
-router.use(authenticationController.protect);
-
 // The route for getting user info based on token
 router.get(
   "/getUserInfoBasedOnToken",
-  authenticationController.getUserInfoBasedOnToken
+  firebaseAuthenticationController.getUserInfoBasedOnTokenId
 );
 
 // Export the app in order to be able to be used by the app

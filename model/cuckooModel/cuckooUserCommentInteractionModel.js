@@ -1,8 +1,8 @@
 // Import the mongoose
 const mongoose = require("mongoose");
 
-// HBTGram user comment interaction schema
-const hbtGramUserCommentInteraction = new mongoose.Schema({
+// Cuckoo user comment interaction schema
+const cuckooUserCommentInteraction = new mongoose.Schema({
   user: {
     type: String,
     required: [true, "User id must not be blank"],
@@ -17,11 +17,11 @@ const hbtGramUserCommentInteraction = new mongoose.Schema({
   },
 });
 
-// HBTGram user comment interaction model based on the schema
-const HBTGramUserCommentInteraction = mongoose.model(
-  "HBTGramUserCommentInteraction",
-  hbtGramUserCommentInteraction
+// Cuckoo user comment interaction model based on the schema
+const CuckooUserCommentInteraction = mongoose.model(
+  "CuckooUserCommentInteraction",
+  cuckooUserCommentInteraction
 );
 
 // Export the model
-module.exports = HBTGramUserCommentInteraction;
+module.exports = CuckooUserCommentInteraction;

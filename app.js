@@ -13,9 +13,6 @@ const cookieParser = require("cookie-parser");
 // Router for the user
 const userRouter = require(`${__dirname}/routes/userRoute/userRoutes`);
 
-// Router for the allowed users
-const allowedUserRouter = require(`${__dirname}/routes/userRoute/allowedUserRoutes`);
-
 // Router for the user block
 const userBlockRouter = require(`${__dirname}/routes/userRoute/userBlockRoutes`);
 
@@ -62,7 +59,7 @@ const cuckooNotificationSocketRoutes = require(`${__dirname}/routes/cuckooNotifi
 // Router for the friend recommendation
 const cuckooFriendRecommendationRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooFriendRecommendationRoutes`);
 
-// Router for the video chat
+// Router for the video
 const cuckooVideoChatRoutes = require(`${__dirname}/routes/cuckooMainRoute/cuckooVideoChatRoutes`);
 //--------------MESSAGE ROUTERS --------------
 // Router for the messages
@@ -91,9 +88,6 @@ app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 //-------------- CREATE ROUTES FOR THE USER --------------
 // Use the userRouter as middleware. This can be known as parent route for the user
 app.use("/api/v1/users", userRouter);
-
-// Use the allowedUserRouter as middleware. This can be known as parent route for the allowed users
-app.use("/api/v1/allowedUsers", allowedUserRouter);
 
 // Use the user block routes
 app.use("/api/v1/userBlock", userBlockRouter)

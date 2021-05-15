@@ -114,6 +114,8 @@ io.on(
           postId = parsedData.postId;
         }
 
+        console.log("In post detail room")
+
         // Let user join in the post detail room
         socket.join(postId);
       })
@@ -145,13 +147,6 @@ io.on(
 
         // Get user id of the user who created that post
         const postWriterUserId = postObjectGetCommented.writer;
-
-        // Call the function to send notification for the post writer
-        await sendNotification(
-          postWriterUserId,
-          "Some one just commented on your post",
-          "Go and check out who just commented on your post"
-        );
         //***************** End reference the database to get info of writer of the post that get commented to send notification ***************/
 
         // Create the new comment object based on the received comment object from the client app
@@ -160,6 +155,9 @@ io.on(
           writer: commentObject.writer,
           content: commentObject.content,
         };
+
+        console.log(commentObject)
+        console.log(commentObjectToEmit)
 
         // Emit the event and let the client app know that new comment was created
         socket.broadcast

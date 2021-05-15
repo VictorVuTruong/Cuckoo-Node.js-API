@@ -1,8 +1,8 @@
 // Import the mongoose
 const mongoose = require("mongoose");
 
-// HBtGram post photo label visit schema
-const hbtGramPostPhotoLabelVisit = new mongoose.Schema({
+// Cuckoo post photo label visit schema
+const cuckooPostPhotoLabelVisit = new mongoose.Schema({
   user: {
     type: String,
     required: [true, "User id must not be blank"],
@@ -17,11 +17,11 @@ const hbtGramPostPhotoLabelVisit = new mongoose.Schema({
   },
 });
 
-// HBTGram post photo label visit model based on the schema
-const HBTGramPostPhotoLabelVisit = mongoose.model(
-  "HBTGramPostPhotoLabelVisit",
-  hbtGramPostPhotoLabelVisit
+// Cuckoo post photo label visit model based on the schema
+const CuckooPostPhotoLabelVisit = mongoose.model(
+  "CuckooPostPhotoLabelVisit",
+  cuckooPostPhotoLabelVisit
 );
 
 // Export the model
-module.exports = HBTGramPostPhotoLabelVisit;
+module.exports = CuckooPostPhotoLabelVisit;

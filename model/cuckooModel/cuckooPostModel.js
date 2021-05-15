@@ -1,8 +1,8 @@
 // Require mongoose package
 const mongoose = require("mongoose");
 
-// Create schema for the HBTGram post
-const hbtGramPostSchema = new mongoose.Schema({
+// Create schema for the Cuckoo post
+const cuckooPostSchema = new mongoose.Schema({
   content: {
     type: String,
     required: [true, "Content must not be blank"],
@@ -25,7 +25,7 @@ const hbtGramPostSchema = new mongoose.Schema({
 
 // Run this middleware before saving new document to the database in order to get order
 // in collection for the new confession post as well as get the date created
-hbtGramPostSchema.pre("save", async function (next) {
+cuckooPostSchema.pre("save", async function (next) {
   // The date object
   let dateObject = new Date();
 
@@ -57,8 +57,8 @@ hbtGramPostSchema.pre("save", async function (next) {
   next();
 });
 
-// Create the hbt gram post object based on the schema
-const HBTGramPost = mongoose.model("HBTGramPost", hbtGramPostSchema);
+// Create the Cuckoo post object based on the schema
+const CuckooPost = mongoose.model("CuckooPost", cuckooPostSchema);
 
 // Export the model
-module.exports = HBTGramPost;
+module.exports = CuckooPost;

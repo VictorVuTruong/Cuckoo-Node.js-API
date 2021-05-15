@@ -2,7 +2,7 @@
 const mongoose = require("mongoose");
 
 // Create schema for the new object which will be added to the database for the hbt gram post comment
-const hbtGramPostCommentSchema = new mongoose.Schema({
+const cuckooPostCommentSchema = new mongoose.Schema({
   content: {
     type: String,
     required: [true, "Message content must not be blank"],
@@ -21,8 +21,8 @@ const hbtGramPostCommentSchema = new mongoose.Schema({
 });
 
 // Run this middleware before saving document to the database in order to fill in order in collection
-// for the hbt gram post comments
-hbtGramPostCommentSchema.pre("save", async function (next) {
+// for the Cuckoo post comments
+cuckooPostCommentSchema.pre("save", async function (next) {
   // Get the current day and time
   let currentDateAndTimeObject = new Date();
 
@@ -37,10 +37,10 @@ hbtGramPostCommentSchema.pre("save", async function (next) {
 });
 
 // Create the object out of the schema
-const HBTGramPostComment = mongoose.model(
-  "HBTGramPostComment",
-  hbtGramPostCommentSchema
+const CuckooPostComment = mongoose.model(
+  "CuckooPostComment",
+  cuckooPostCommentSchema
 );
 
 // Export the model
-module.exports = HBTGramPostComment;
+module.exports = CuckooPostComment;

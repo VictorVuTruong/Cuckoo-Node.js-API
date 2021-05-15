@@ -1,8 +1,8 @@
 // Require mongoose package
 const mongoose = require("mongoose");
 
-// Create schema for the HBT Gram post like object
-const hbtGramPostLikeSchema = new mongoose.Schema({
+// Create schema for the Cuckoo post like object
+const cuckooPostLikeSchema = new mongoose.Schema({
   whoLike: {
     type: String,
     required: [true, "Liker email must not be blank"],
@@ -14,10 +14,10 @@ const hbtGramPostLikeSchema = new mongoose.Schema({
 });
 
 // Create the object out of the schema
-const HBTGramPostLike = mongoose.model(
-  "HBTGramPostLike",
-  hbtGramPostLikeSchema
+const CuckooPostLike = mongoose.model(
+  "CuckooPostLike",
+  cuckooPostLikeSchema
 );
 
 // Export the model
-module.exports = HBTGramPostLike;
+module.exports = CuckooPostLike;

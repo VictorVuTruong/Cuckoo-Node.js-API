@@ -4,6 +4,9 @@ const express = require("express");
 // Import the authenticationController
 const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
 
+// Import the Firebase authentication controller
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
+
 // Create new router for the post comment
 const router = express.Router();
 
@@ -11,7 +14,7 @@ const router = express.Router();
 const cuckooPostCommentController = require(`${__dirname}/../../controller/cuckooController/cuckooPostCommentController`);
 
 // Use this middleware to protect any routes beyond this point
-router.use(authenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The router for getting all post comments and creating the new one
 router

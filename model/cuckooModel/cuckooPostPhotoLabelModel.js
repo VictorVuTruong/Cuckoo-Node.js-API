@@ -1,8 +1,8 @@
 // Require mongoose package
 const mongoose = require("mongoose");
 
-// Create schema for the hbt gram post photo label
-const hbtGramPostPhotoLabelSchema = new mongoose.Schema({
+// Create schema for the Cuckoo post photo label
+const cuckooPostPhotoLabelSchema = new mongoose.Schema({
   imageID: {
     type: String,
     required: [true, "image id must not be blank"],
@@ -18,7 +18,7 @@ const hbtGramPostPhotoLabelSchema = new mongoose.Schema({
 
 // Run this middleware before saving new document to the database in order to get order
 // in collection for the newly created object
-hbtGramPostPhotoLabelSchema.pre("save", async function (next) {
+cuckooPostPhotoLabelSchema.pre("save", async function (next) {
   // The date object
   let dateObject = new Date();
 
@@ -35,10 +35,10 @@ hbtGramPostPhotoLabelSchema.pre("save", async function (next) {
 });
 
 // Create the object out of the schema
-const HBTGramPostPhotoLabel = mongoose.model(
-  "HBTGramPostPhotoLabel",
-  hbtGramPostPhotoLabelSchema
+const CuckooPostPhotoLabel = mongoose.model(
+  "CuckooPostPhotoLabel",
+  cuckooPostPhotoLabelSchema
 );
 
 // Export the model
-module.exports = HBTGramPostPhotoLabel;
+module.exports = CuckooPostPhotoLabel;

@@ -4,6 +4,9 @@ const express = require("express");
 // Import the authenticationController
 const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
 
+// Import the Firebase authentication controller
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
+
 // Create new router for the confession post
 const router = express.Router();
 
@@ -11,7 +14,7 @@ const router = express.Router();
 const cuckooPostController = require(`${__dirname}/../../controller/cuckooController/cuckooPostController`);
 
 // Use the protect middleware to protect any routes beyond this point
-router.use(authenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting all posts and creating the new one
 router

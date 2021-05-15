@@ -4,6 +4,9 @@ const express = require("express");
 // Import the authenticationController
 const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
 
+// Import the Firebase authentication controller
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
+
 // Create new router for the post photo
 const router = express.Router();
 
@@ -11,7 +14,7 @@ const router = express.Router();
 const messagePhotoController = require(`${__dirname}/../../controller/messageController/messagePhotoController`);
 
 // Use this middleware to protect any routes beyond this point
-router.use(authenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting and creating new post photo
 router

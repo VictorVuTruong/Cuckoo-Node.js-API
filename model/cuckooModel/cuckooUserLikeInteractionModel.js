@@ -1,8 +1,8 @@
 // Import the mongoose
 const mongoose = require("mongoose");
 
-// HBTGram user like interaction schema
-const hbtGramUserLikeInteraction = new mongoose.Schema({
+// Cuckoo user like interaction schema
+const cuckooUserLikeInteraction = new mongoose.Schema({
   user: {
     type: String,
     required: [true, "User id must not be blank"],
@@ -17,11 +17,11 @@ const hbtGramUserLikeInteraction = new mongoose.Schema({
   },
 });
 
-// HBTGram user like interaction model based on the schema
-const HBTGramUserLikeInteraction = mongoose.model(
-  "HBTGramUserLikeInteraction",
-  hbtGramUserLikeInteraction
+// Cuckoo user like interaction model based on the schema
+const CuckooUserLikeInteraction = mongoose.model(
+  "CuckooUserLikeInteraction",
+  cuckooUserLikeInteraction
 );
 
 // Export the user like interaction model
-module.exports = HBTGramUserLikeInteraction;
+module.exports = CuckooUserLikeInteraction;

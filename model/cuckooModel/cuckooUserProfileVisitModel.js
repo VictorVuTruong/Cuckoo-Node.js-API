@@ -1,8 +1,8 @@
 // Import the mongoose
 const mongoose = require("mongoose");
 
-// HBTGram user profile visit schema
-const hbtGramUserProfileVisit = new mongoose.Schema({
+// Cuckoo user profile visit schema
+const cuckooUserProfileVisit = new mongoose.Schema({
   user: {
     type: String,
     required: [true, "User id must not be blank"],
@@ -20,11 +20,11 @@ const hbtGramUserProfileVisit = new mongoose.Schema({
   },
 });
 
-// HBTGram user profile visit model based on the schema
-const HBTGramUserProfileVisit = mongoose.model(
-  "HBTGramUserProfileVisit",
-  hbtGramUserProfileVisit
+// Cuckoo user profile visit model based on the schema
+const CuckooUserProfileVisit = mongoose.model(
+  "CuckooUserProfileVisit",
+  cuckooUserProfileVisit
 );
 
 // Export the model
-module.exports = HBTGramUserProfileVisit;
+module.exports = CuckooUserProfileVisit;
