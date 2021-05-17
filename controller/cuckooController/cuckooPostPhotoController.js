@@ -311,6 +311,11 @@ exports.deletePostPhoto = async (postId) => {
     );
   }
 
+  // Delete all photos that are associated with the specified post id
+  await cuckooPostPhotoModel.deleteMany({
+    postId: postId
+  })
+
   // Return the array of image URLs of post photos to be deleted
   return arrayOfPhotoURLs;
 };

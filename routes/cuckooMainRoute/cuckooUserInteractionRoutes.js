@@ -2,9 +2,6 @@
 const express = require("express");
 const { route } = require("./cuckooPostRoutes");
 
-// Import the authenticationController
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
-
 // Import the Firebase authentication controller
 const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
 

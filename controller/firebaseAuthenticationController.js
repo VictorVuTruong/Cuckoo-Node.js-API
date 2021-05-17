@@ -75,7 +75,7 @@ exports.signUp = catchAsync(async (request, response, next) => {
 exports.protect = catchAsync(async (request, response, next) => {
     // Get id token from the user
     const idToken = request.cookies.idToken
-
+    
     // Authenticate the user based on retrieved token
     admin
         .auth()

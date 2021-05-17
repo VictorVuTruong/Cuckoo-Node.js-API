@@ -1,9 +1,6 @@
 // Import express for the route
 const express = require("express");
 
-// Import the authenticationController
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
-
 // Create new router for the friend recommendation
 const router = express.Router();
 

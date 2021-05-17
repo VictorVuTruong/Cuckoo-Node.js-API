@@ -1,9 +1,6 @@
 // Import express for the route
 const express = require("express");
 
-// Import the authenticationController
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
-
 // Import the video chat controller
 const cuckooVideoChatController = require(`${__dirname}/../../controller/cuckooController/cuckooVideoChatController`);
 

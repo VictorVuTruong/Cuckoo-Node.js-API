@@ -1,11 +1,8 @@
 // Import express for the route
 const express = require("express");
 
-// Import the authenticationController
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
-
 // Import the Firebase authentication controller
-const firebaseAuthenticationController = require(`${__dirname}/../../controller/authenticationController`);
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
 
 // Create new router for the post comment photo
 const router = express.Router();

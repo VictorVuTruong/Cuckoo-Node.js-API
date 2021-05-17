@@ -4,9 +4,6 @@ const express = require("express");
 // Create new router for users
 const router = express.Router();
 
-// Import the authenticationController
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
-
 // Import the userBlockController module
 const userBlockController = require(`${__dirname}/../../controller/userController/userBlockController`);
 
