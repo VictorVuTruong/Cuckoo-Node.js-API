@@ -76,10 +76,12 @@ exports.getMessagePhotosBetweenUsers = catchAsync(
       arrayOfMessagePhotoURL.push(messagePhoto.imageURL);
     });
 
+    console.log(arrayOfMessagePhotos)
+
     // Return array of message photos to the user
     response.status(200).json({
       status: "Done",
-      data: arrayOfMessagePhotoURL,
+      data: arrayOfMessagePhotos,
     });
   }
 );
@@ -121,7 +123,7 @@ exports.getMessagePhotosOfChatRoom = catchAsync(
     // Return array of message photos to the user
     response.status(200).json({
       status: "Done",
-      data: arrayOfMessagePhotoURL,
+      data: arrayOfMessagePhotos,
     });
   }
 );

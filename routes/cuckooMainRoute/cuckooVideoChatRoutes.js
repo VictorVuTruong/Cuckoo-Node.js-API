@@ -4,11 +4,14 @@ const express = require("express");
 // Import the video chat controller
 const cuckooVideoChatController = require(`${__dirname}/../../controller/cuckooController/cuckooVideoChatController`);
 
+// Import the Firebase authentication controller
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`)
+
 // Create router for the video chat
 const router = express.Router();
 
 // Use the protect middleware to protect any routes beyond this point
-//router.use(authenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting access token to get into chat room
 router

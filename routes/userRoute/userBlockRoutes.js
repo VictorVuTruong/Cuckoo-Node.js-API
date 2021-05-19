@@ -13,5 +13,5 @@ router
   .post("/", userBlockController.createNewUserBlock)
   .delete("/", userBlockController.deleteABlockBetween2Users);
 
-// Export the app in order to be able to be used by the app
+// Export the route in order to be able to be used by the app
 module.exports = router;

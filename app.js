@@ -16,6 +16,9 @@ const userRouter = require(`${__dirname}/routes/userRoute/userRoutes`);
 // Router for the user block
 const userBlockRouter = require(`${__dirname}/routes/userRoute/userBlockRoutes`);
 
+// Router for the user trust
+const userTrustRouter = require(`${__dirname}/routes/userRoute/userTrustRoutes`)
+
 //-------------- MAIN ROUTERS --------------
 // Router for the posts
 const cuckooPostRouter = require(`${__dirname}/routes/cuckooMainRoute/cuckooPostRoutes`);
@@ -91,6 +94,9 @@ app.use("/api/v1/users", userRouter);
 
 // Use the user block routes
 app.use("/api/v1/userBlock", userBlockRouter)
+
+// Use the user trust routes
+app.use("/api/v1/userTrust", userTrustRouter)
 
 //-------------- CREATE ROUTES FOR THE MAIN ROUTES --------------
 // Use the cuckooPostRouter as middleware
