@@ -216,9 +216,9 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   // Also have them ordered in descending order of visit frequency
   const topLabelsForUser = await cuckooPostPhotoLabelVisitModel
     .find({
-      user: userId,
+      user: userId
     })
-    .sort({ numOfVisits: -1 })
+    //sort({ numOfVisits: -1 })
 
   // Loop through that list of labels for user to get list of photo labels
   topLabelsForUser.forEach((label) => {
@@ -274,12 +274,21 @@ exports.getPhotosForUser = catchAsync(async (request, response, next) => {
   arrayOfPhotos = arrayOfPhotos.concat(listOfTopLabelPhotos);
   //******************* END GET PHOTOS ASSOCIATED WITH TOP LABELS ******************* */
 
-  // Return response to the client
-  response.status(200).json({
-    status: "Done",
-    data: arrayOfPhotos,
-    newCurrentLocationInList: locationForNextLoad,
-  });
+  if (arrayOfPhotos.length < 5) {
+    // Return response to the client and let the client know that there is no more picture
+    response.status(200).json({
+      status: "Done",
+      data: arrayOfPhotos,
+      newCurrentLocationInList: 0
+    })
+  } else {
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: arrayOfPhotos,
+      newCurrentLocationInList: locationForNextLoad,
+    });
+  }
 });
 //***************************** END PHOTO RECOMMEND ***************************** */
 

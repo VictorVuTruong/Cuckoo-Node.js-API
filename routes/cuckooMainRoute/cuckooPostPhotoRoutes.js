@@ -11,7 +11,7 @@ const router = express.Router();
 const cuckooPostPhotoController = require(`${__dirname}/../../controller/cuckooController/cuckooPostPhotoController`);
 
 // Use this middleware to protect any routes beyond this point
-router.use(firebaseAuthenticationController.protect);
+//router.use(firebaseAuthenticationController.protect);
 
 // The route for getting and creating new post photo
 router

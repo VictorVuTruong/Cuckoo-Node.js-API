@@ -21,7 +21,7 @@ exports.createNewPostPhotoLabel = factory.createDocument(
 );
 
 // The function to update user photo label visit
-exports.updatePhotoLabelVisit = catchAsync(async (request, response, next) => {
+exports.updatePhotoLabelVisit = catchAsync(async (request, response, next) => {  
   // Get user id of the user who come to visit a photo label
   const visitorUserId = request.query.visitorUserId;
 

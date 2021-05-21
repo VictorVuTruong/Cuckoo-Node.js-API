@@ -11,7 +11,7 @@ const router = express.Router();
 const cuckooPostPhotoLabelController = require(`${__dirname}/../../controller/cuckooController/cuckooPostPhotoLabelController`);
 
 // Use the protect middleware to protect any routes beyond this point
-router.use(firebaseAuthenticationController.protect);
+//router.use(firebaseAuthenticationController.protect);
 
 // The route for getting all post photo label and creating new one
 router
