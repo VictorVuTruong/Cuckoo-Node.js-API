@@ -14,7 +14,7 @@ const crypto = require("crypto");
 const userSchema = new mongoose.Schema({
   firebaseUID: {
     type: String,
-    required: [true, "Firebase UID must not be blank"]
+    required: [true, "Firebase UID must not be blank"],
   },
   fullName: {
     type: String,
@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema({
     coordinates: [Number],
     description: String,
   },
+  locationEnabled: {
+    type: String,
+  },
 });
 
 // Index for MongoDB so that it knows that location should be 2D sphere
@@ -82,7 +85,16 @@ userSchema.pre("save", async function (next) {
 
   // Hash the password
   this.password = await bcrypt.hash(this.password, 12);
-  
+
+  // Go to the next middleware
+  next();
+});
+
+// This middleware is to set location enabled for user to be false
+userSchema.pre("save", async function (next) {
+  this.locationEnabled = "Disabled";
+
+  // Go to the next middleware
   next();
 });
 

@@ -5,10 +5,10 @@ const express = require("express");
 const router = express.Router();
 
 // Import the Firebase authentication controller
-const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`)
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
 
 // Import the authentication controller
-const authenticationController = require(`${__dirname}/../../controller/authenticationController`)
+const authenticationController = require(`${__dirname}/../../controller/authenticationController`);
 
 // Import the userController module
 const userController = require(`${__dirname}/../../controller/userController/userController`);
@@ -33,10 +33,16 @@ router.post("/getSignUpToken", authenticationController.getSignUpToken);
 router.post("/validateLoginToken", firebaseAuthenticationController.checkToken);
 
 // Use the protect middleware to protect any routes beyond this point
-router.use(firebaseAuthenticationController.protect);
+//router.use(firebaseAuthenticationController.protect);
 
 // The route for getting list of users in a specified radius
 router.get("/getUserWithin", userController.getUserWithin);
+
+// The route for geting users to be pinned on the Cuckoo map for user with specified user id
+router.get(
+  "/getUsersToBePinnedOnMap",
+  userController.getListOfUsersToShowOnCuckooMapForUser
+);
 
 // The route for getting all users
 // Query can also be done at this route

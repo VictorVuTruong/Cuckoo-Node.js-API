@@ -1,5 +1,3 @@
-const { request, response } = require("express");
-
 // Import the CuckooFollowModel
 const cuckooFollowModel = require(`${__dirname}/../../model/cuckooModel/cuckooFollowModel`);
 
@@ -36,6 +34,46 @@ exports.deleteCuckooFollowBetween2Users = catchAsync(
     // Return response to the client app
     response.status(204).json({
       status: "Done",
+    });
+  }
+);
+
+// The function to get list of two way follow of user with specified user id
+exports.getListOf2WayFollowOfUser = catchAsync(
+  async (request, response, next) => {
+    // Get user id of the user to get two way follow
+    const userId = request.query.userId;
+
+    // List of 2 way follow of user with specified user id
+    const arrayOf2WayFollow = [];
+
+    // Reference the database to get list of followings of user with specified user id
+    const listOfFollowingsOfUser = await cuckooFollowModel.find({
+      follower: userId,
+    });
+
+    // Loop through that list of followings to check and see if that user also follow
+    // user with specified user id or not
+    for (let i = 0; i < listOfFollowingsOfUser.length; i++) {
+      // Reference the database to check and see if that user also follow user
+      // with specified user id or not
+      const followObjectBetween2Users = await cuckooFollowModel.findOne({
+        follower: listOfFollowingsOfUser[0].following,
+        following: userId,
+      });
+
+      // If follow object between the 2 users is not null, it means that user with specified user id
+      // is followed by current user in the loop
+      // if that's the case, add that user id to the array of 2 ways follow
+      if (followObjectBetween2Users != null) {
+        arrayOf2WayFollow.push(followObjectBetween2Users.follower);
+      }
+    }
+
+    // Return response with list of 2 ways follow to the user
+    response.status(200).json({
+      status: "Done",
+      data: arrayOf2WayFollow,
     });
   }
 );

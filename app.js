@@ -17,7 +17,7 @@ const userRouter = require(`${__dirname}/routes/userRoute/userRoutes`);
 const userBlockRouter = require(`${__dirname}/routes/userRoute/userBlockRoutes`);
 
 // Router for the user trust
-const userTrustRouter = require(`${__dirname}/routes/userRoute/userTrustRoutes`)
+const userTrustRouter = require(`${__dirname}/routes/userRoute/userTrustRoutes`);
 
 //-------------- MAIN ROUTERS --------------
 // Router for the posts
@@ -93,10 +93,10 @@ app.use(express.urlencoded({ extended: true, limit: "10kb" }));
 app.use("/api/v1/users", userRouter);
 
 // Use the user block routes
-app.use("/api/v1/userBlock", userBlockRouter)
+app.use("/api/v1/userBlock", userBlockRouter);
 
 // Use the user trust routes
-app.use("/api/v1/userTrust", userTrustRouter)
+app.use("/api/v1/userTrust", userTrustRouter);
 
 //-------------- CREATE ROUTES FOR THE MAIN ROUTES --------------
 // Use the cuckooPostRouter as middleware
@@ -139,13 +139,13 @@ app.use("/api/v1/cuckooAccountStats", cuckooAccountStatsRoutes);
 app.use("/api/v1/cuckooNotifications", cuckooNotificationRoutes);
 
 // Use the cuckooNotificationSocketRoutes
-app.use("/api/v1/cuckooNotificationSocket", cuckooNotificationSocketRoutes)
+app.use("/api/v1/cuckooNotificationSocket", cuckooNotificationSocketRoutes);
 
 // Use the cuckooFriendRecommendationRoutes
 app.use("/api/v1/cuckooFriendRecommendation", cuckooFriendRecommendationRoutes);
 
 // Use the cuckooVideoChatRoutes
-app.use("/api/v1/videoChat", cuckooVideoChatRoutes)
+app.use("/api/v1/videoChat", cuckooVideoChatRoutes);
 
 //-------------- CREATE ROUTES FOR THE MESSAGE --------------
 // Use the messageRouter as middleware

@@ -10,6 +10,9 @@ const factory = require(`${__dirname}/../handlerFactory`);
 // Import this one in order to catch error in any async functions
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
+// Import the cuckoo follow model
+const cuckooFollowModel = require(`${__dirname}/../../model/cuckooModel/cuckooFollowModel`);
+
 // This middleware is used to get all users
 exports.getAllUsers = factory.getAllDocuments(User);
 
@@ -61,8 +64,8 @@ exports.updateMe = catchAsync(async (request, respond, next) => {
 // This middleware is used for searching user
 exports.searchUser = catchAsync(async (request, response, next) => {
   // Replace "-" with " " in search query
-  let replacedSearchQuery = (request.query.fullName).replace("-", " ");
-  
+  let replacedSearchQuery = request.query.fullName.replace("-", " ");
+
   // Array of found user
   const foundUser = await User.find({
     fullName: { $regex: replacedSearchQuery },
@@ -137,3 +140,52 @@ exports.getUserWithin = catchAsync(async (request, respond, next) => {
     data: users,
   });
 });
+
+// The function to get list of user to show on the Cuckoo map for user with specified user id
+exports.getListOfUsersToShowOnCuckooMapForUser = catchAsync(
+  async (request, response, next) => {
+    // Get user id of the user who want to get list of users to be shown on the Cuckoo map
+    const userId = request.query.userId;
+
+    // List of users to be pinned on the Cuckoo map for user
+    const arrayOfUsersToBePinnedOnMap = [];
+
+    // Reference the database to get list of followings of user with specified user id
+    const listOfFollowingsOfUser = await cuckooFollowModel.find({
+      follower: userId,
+    });
+
+    // Loop through that list of followings to check and see if that user also follow
+    // user with specified user id or not
+    for (let i = 0; i < listOfFollowingsOfUser.length; i++) {
+      // Reference the database to check and see if that user also follow user
+      // with specified user id or not
+      const followObjectBetween2Users = await cuckooFollowModel.findOne({
+        follower: listOfFollowingsOfUser[0].following,
+        following: userId,
+      });
+
+      // If follow object between the 2 users is not null, it means that user with specified user id
+      // is followed by current user in the loop
+      // if that's the case, add that user id to the array of 2 ways follow
+      if (followObjectBetween2Users != null) {
+        // Reference the database to check and see if this user enable location share or not
+        const userObject = await User.findOne({
+          _id: followObjectBetween2Users.follower,
+          locationEnabled: "Enabled",
+        });
+
+        // If the user object is not null (user does turn on location), add that user id to the list
+        if (userObject != null) {
+          arrayOfUsersToBePinnedOnMap.push(followObjectBetween2Users.follower);
+        }
+      }
+    }
+
+    // Return response to the client
+    response.status(200).json({
+      status: "Done",
+      data: arrayOfUsersToBePinnedOnMap,
+    });
+  }
+);

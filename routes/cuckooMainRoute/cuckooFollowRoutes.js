@@ -11,7 +11,7 @@ const router = express.Router();
 const cuckooFollowController = require(`${__dirname}/../../controller/cuckooController/cuckooFollowController`);
 
 // Use this middleware to protect any routes beyond this point
-router.use(firebaseAuthenticationController.protect);
+//router.use(firebaseAuthenticationController.protect);
 
 // The route for getting and creating new follow object
 router
@@ -31,6 +31,11 @@ router
 router
   .route("/checkFollowStatus")
   .get(cuckooFollowController.checkFollowStatus);
+
+// The route for getting list of 2 ways follow of user with specified user id
+router
+  .route("/get2WaysFollow")
+  .get(cuckooFollowController.getListOf2WayFollowOfUser);
 
 // Export the module
 module.exports = router;
