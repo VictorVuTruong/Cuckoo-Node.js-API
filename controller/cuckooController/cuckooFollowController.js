@@ -52,13 +52,15 @@ exports.getListOf2WayFollowOfUser = catchAsync(
       follower: userId,
     });
 
+    console.log(listOfFollowingsOfUser)
+
     // Loop through that list of followings to check and see if that user also follow
     // user with specified user id or not
     for (let i = 0; i < listOfFollowingsOfUser.length; i++) {
       // Reference the database to check and see if that user also follow user
       // with specified user id or not
       const followObjectBetween2Users = await cuckooFollowModel.findOne({
-        follower: listOfFollowingsOfUser[0].following,
+        follower: listOfFollowingsOfUser[i].following,
         following: userId,
       });
 
