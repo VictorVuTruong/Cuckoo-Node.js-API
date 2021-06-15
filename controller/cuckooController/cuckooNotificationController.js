@@ -206,6 +206,8 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
 
     // If title of the notification is message, let the receiver know that there is new message
     if (notificationTitle == "message") {
+      console.log("Message notification sent")
+      
       // Reference the database to get info of sender
       const messageSenderUserObject = await userModel.findOne({
         _id: notificationSender
@@ -214,7 +216,7 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
       // Create the notification
       message = {
         notification: {
-          title: `${messageSenderUserObject.fullName} has sent you a message`,
+          title: `${messageSenderUserObject.fullName} sent you a message`,
           body: notificationContent,
         },
         token: notificationSocketId,

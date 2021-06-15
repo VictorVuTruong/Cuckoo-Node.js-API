@@ -11,14 +11,15 @@ const router = express.Router();
 const cuckooPostController = require(`${__dirname}/../../controller/cuckooController/cuckooPostController`);
 
 // Use the protect middleware to protect any routes beyond this point
-//router.use(firebaseAuthenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting all posts and creating the new one
 router
   .route("/")
   .get(cuckooPostController.getAllCuckooPosts)
   .post(cuckooPostController.createNewCuckooPost)
-  .delete(cuckooPostController.deleteCuckooPost);
+  .delete(cuckooPostController.deleteCuckooPost)
+  .patch(cuckooPostController.editPost)
 
 // The route for getting Cuckoo post detail based on post id
 router

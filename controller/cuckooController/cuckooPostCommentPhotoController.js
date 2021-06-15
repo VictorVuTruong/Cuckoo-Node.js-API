@@ -7,6 +7,14 @@ const factory = require(`${__dirname}/../handlerFactory`);
 // Import the catchAsync
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
+// Imports the Google Cloud client library
+const { Storage } = require("@google-cloud/storage");
+
+// Storage object
+let storage = new Storage({
+  keyFilename: `${__dirname}/../../HBTGram-229b40c05d35.json`,
+});
+
 // The function to get all cuckoo post comment photo
 exports.getAllCuckooPostCommentPhotos = factory.getAllDocuments(
   cuckooPostCommentPhotoModel
@@ -29,7 +37,7 @@ exports.deleteCuckooPostCommentPhotoBasedOnCommentId = async (commentId) => {
   var arrayOfPhotoURLsToBeDeleted = [];
 
   // Reference the database to get photos to be deleted
-  const photosToDeleted = await cuckooPostCommentPhotoModel.find({
+  const photosToDeleted = await cuckooPostCommentPhotoModel.find({ 
     commentId: commentId,
   });
 
@@ -44,6 +52,39 @@ exports.deleteCuckooPostCommentPhotoBasedOnCommentId = async (commentId) => {
     commentId: commentId,
   });
 
-  // Return array of photo URLs that should be deleted from the storage
-  return arrayOfPhotoURLsToBeDeleted;
+  // Loop through the array of comment photos to be deleted to delete them in the storage
+  arrayOfPhotoURLsToBeDeleted.forEach(photoURL => {
+    // Call the function to delete the photo
+    deletePhotoBasedOnURL(photoURL, "hbtGramPostCommentPhotos")
+  })
 };
+
+// The function to delete a photo based on its URL
+function deletePhotoBasedOnURL(imageURL, parentFolder) {
+  // Index of the start point of the image name
+  var startOfName = imageURL.indexOf("%2F") + 3;
+
+  // Index of the end point of the image name
+  var endOfName = imageURL.indexOf("?");
+
+  // Image name
+  let imageName = imageURL.substring(startOfName, endOfName);
+
+  // Storage bucket
+  var bucket = storage.bucket("hbtgram.appspot.com");
+
+  // Start deleting the found image
+  bucket.deleteFiles(
+    {
+      prefix: `${parentFolder}/${imageName}`,
+    },
+    function (error) {
+      if (!error) {
+        // If there is no error, return 0
+        return 0;
+      } else {
+        // If there is an error, return 1
+      }
+    }
+  );
+}

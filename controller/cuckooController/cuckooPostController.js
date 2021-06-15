@@ -292,51 +292,6 @@ exports.getCuckooPostDetail = catchAsync(async (request, response, next) => {
   next();
 });
 
-//************************************************** */
-/*
-ADDITIONAL FUNCTIONS
-1. The function to get list of users within a radius
-*/
-
-// The function to get list of users within a radius
-async function getUsersWithin(location, radius, unit, limit) {
-  // Get the lattitude and longitude from the location parameter
-  const [lattitude, longitude] = location.split(",");
-
-  // The radius should be converted to radian in this case. We get it by dividing the distance by the radius of the earth
-  var radiusInRadian = 0;
-  if (unit === "mi") {
-    radiusInRadian = radius / 3963.2;
-  } else {
-    radiusInRadian = radius / 6378.1;
-  }
-
-  // List of users within a radius, will be based on limit param passed to this function
-  let listOfUsersWithinRadius = null;
-
-  // Reference the database to get list of users within a radius
-  // Also limit number of results based on parameter passes to the function
-  // If it is blank, don't do anything
-  if (limit != 0) {
-    listOfUsersWithinRadius = await User.find({
-      location: {
-        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
-      },
-    }).limit(limit);
-  } else {
-    listOfUsersWithinRadius = await User.find({
-      location: {
-        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
-      },
-    });
-  }
-
-  // Return list of users within a radius
-  return listOfUsersWithinRadius;
-}
-
-/** ***************************** END ADDITIONAL FUNCTIONS ******************** */
-
 // The function to create new cuckoo post
 exports.createNewCuckooPost = factory.createDocument(cuckooPostModel);
 
@@ -411,6 +366,64 @@ exports.deleteCuckooPost = catchAsync(async (request, response, next) => {
   }
 });
 
+// The function to edit post
+exports.editPost = catchAsync(async (request, response, next) => {
+  // Get post id of post to be modified
+  const postId = request.query.postId
+
+  // Update post in the database (info of the updated post should be in request body)
+  await cuckooPostModel.findByIdAndUpdate(postId, request.body)
+
+  // Return response to the client
+  response.status(200).json({
+    status: "Done",
+    data: "Post has been updated"
+  })
+})
+
+//************************************************** */
+/*
+ADDITIONAL FUNCTIONS
+1. The function to get list of users within a radius
+*/
+
+// The function to get list of users within a radius
+async function getUsersWithin(location, radius, unit, limit) {
+  // Get the lattitude and longitude from the location parameter
+  const [lattitude, longitude] = location.split(",");
+
+  // The radius should be converted to radian in this case. We get it by dividing the distance by the radius of the earth
+  var radiusInRadian = 0;
+  if (unit === "mi") {
+    radiusInRadian = radius / 3963.2;
+  } else {
+    radiusInRadian = radius / 6378.1;
+  }
+
+  // List of users within a radius, will be based on limit param passed to this function
+  let listOfUsersWithinRadius = null;
+
+  // Reference the database to get list of users within a radius
+  // Also limit number of results based on parameter passes to the function
+  // If it is blank, don't do anything
+  if (limit != 0) {
+    listOfUsersWithinRadius = await User.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
+      },
+    }).limit(limit);
+  } else {
+    listOfUsersWithinRadius = await User.find({
+      location: {
+        $geoWithin: { $centerSphere: [[longitude, lattitude], radiusInRadian] },
+      },
+    });
+  }
+
+  // Return list of users within a radius
+  return listOfUsersWithinRadius;
+}
+
 // The function to delete a photo based on its URL
 function deletePhotoBasedOnURL(imageURL, parentFolder) {
   // Index of the start point of the image name
@@ -440,3 +453,4 @@ function deletePhotoBasedOnURL(imageURL, parentFolder) {
     }
   );
 }
+/** ***************************** END ADDITIONAL FUNCTIONS ******************** */
