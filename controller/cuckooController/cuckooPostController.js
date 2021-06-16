@@ -66,6 +66,7 @@ exports.getAllCuckooPostsForUser = catchAsync(
 
     // Array of user ids of users followed by the specified user
     var userIdsOfUserFollowedBySpecifiedUser = [];
+    userIdsOfUserFollowedBySpecifiedUser.push("60c949986aec7d0017b9bf62")
 
     // Get user id of the user to get posts for
     const userId = request.query.userId;
