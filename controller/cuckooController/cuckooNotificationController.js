@@ -205,9 +205,7 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
     let message
 
     // If title of the notification is message, let the receiver know that there is new message
-    if (notificationTitle == "message") {
-      console.log("Message notification sent")
-      
+    if (notificationTitle == "message") {      
       // Reference the database to get info of sender
       const messageSenderUserObject = await userModel.findOne({
         _id: notificationSender
@@ -221,15 +219,43 @@ exports.sendNotificationToUserWithSpecifiedUserId = catchAsync(async (request, r
         },
         token: notificationSocketId,
       };
+    } else if (notificationTitle == "like") {
+      // Reference the database to get info of the sender
+      const likeSenderUserObject = await userModel.findOne({
+        _id: notificationSender
+      })
+      
+      // Create the notification
+      message = {
+        notification: {
+          title: `${likeSenderUserObject.fullName} liked your post`,
+          body: notificationContent,
+        },
+        token: notificationSocketId,
+      };
+    } else if (notificationTitle == "comment") {
+      // Reference the database to get info of the sender
+      const commentSenderUserObject = await userModel.findOne({
+        _id: notificationSender
+      })
+
+      // Create the notification
+      message = {
+        notification: {
+          title: `${commentSenderUserObject.fullName} commented on your post`,
+          body: notificationContent
+        },
+        token: notificationSocketId
+      }
     } else {
       // Create the notification
       message = {
         notification: {
           title: notificationTitle,
-          body: notificationContent,
+          body: notificationContent
         },
-        token: notificationSocketId,
-      };
+        token: notificationSocketId
+      }
     }
 
     // Send the notification

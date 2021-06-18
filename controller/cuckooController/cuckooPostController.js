@@ -160,8 +160,6 @@ exports.getCuckooPostWithinARadius = catchAsync(
     // Get radius
     const radius = request.query.radius;
 
-    console.log(userLocation);
-
     // Call the function to get list of users within a radius
     const listOfUsersWithinARadius = await getUsersWithin(
       userLocation,

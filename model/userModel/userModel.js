@@ -70,6 +70,9 @@ const userSchema = new mongoose.Schema({
   locationEnabled: {
     type: String,
   },
+  privateProfile: {
+    type: String
+  }
 });
 
 // Index for MongoDB so that it knows that location should be 2D sphere
@@ -97,6 +100,14 @@ userSchema.pre("save", async function (next) {
   // Go to the next middleware
   next();
 });
+
+// This middleware is to set private profile to be "Open"
+userSchema.pre("save", async function (next) {
+  this.privateProfile = "Open"
+
+  // Go to the next middleware
+  next();
+})
 
 // This middleware is going to create the default location for the user
 userSchema.pre("save", async function (next) {
