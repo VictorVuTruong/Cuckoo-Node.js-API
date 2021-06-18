@@ -1,3 +1,5 @@
+const { request, response } = require("express");
+
 // Import the message photo model
 const messagePhotoModel = require(`${__dirname}/../../model/messageModel/messagePhotoModel`);
 
@@ -12,6 +14,14 @@ const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
 // Import the handler factory
 const factory = require(`${__dirname}/../handlerFactory`);
+
+// Imports the Google Cloud client library
+const { Storage } = require("@google-cloud/storage");
+
+// Storage object
+let storage = new Storage({
+  keyFilename: `${__dirname}/../../HBTGram-229b40c05d35.json`,
+});
 
 // The function to get all message photo
 exports.getAllMessagePhotos = factory.getAllDocuments(messagePhotoModel);
@@ -127,3 +137,44 @@ exports.getMessagePhotosOfChatRoom = catchAsync(
     });
   }
 );
+
+// The function to delete a message photo based on message id
+exports.deleteMessagePhotoBasedOnMessageId = catchAsync(async (messageIdParam) => {
+  // Reference the database to get message photo object of message with specified message id
+  const messagePhotoObject = await messagePhotoModel.findOne({
+    messageId: messageIdParam
+  })
+
+  // Call the function to delete the message photo of message with specified message id
+  deletePhotoBasedOnURL(messagePhotoObject.imageURL, "messagePhotos")
+})
+
+// The function to delete a photo based on its URL
+function deletePhotoBasedOnURL(imageURL, parentFolder) {
+  // Index of the start point of the image name
+  var startOfName = imageURL.indexOf("%2F") + 3;
+
+  // Index of the end point of the image name
+  var endOfName = imageURL.indexOf("?");
+
+  // Image name
+  let imageName = imageURL.substring(startOfName, endOfName);
+
+  // Storage bucket
+  var bucket = storage.bucket("hbtgram.appspot.com");
+
+  // Start deleting the found image
+  bucket.deleteFiles(
+    {
+      prefix: `${parentFolder}/${imageName}`,
+    },
+    function (error) {
+      if (!error) {
+        // If there is no error, return 0
+        return 0;
+      } else {
+        // If there is an error, return 1
+      }
+    }
+  );
+}

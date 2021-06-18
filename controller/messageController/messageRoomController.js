@@ -1,6 +1,12 @@
 // Import the message room model
 const MessageRoom = require(`${__dirname}/../../model/messageModel/messageRoomModel`);
 
+// Import the message model
+const Message = require(`${__dirname}/../../model/messageModel/messageModel`)
+
+// Import the message photo controller
+const messagePhotoController = require(`${__dirname}/messagePhotoController`)
+
 // Import catchAsync
 const catchAsync = require(`${__dirname}/../../utils/catchAsync`);
 
@@ -61,3 +67,40 @@ exports.getMessageRoomIdBetween2Users = catchAsync(
     }
   }
 );
+
+// The middleware to delete a chat room with specified id
+exports.deleteChatRoom = catchAsync(async (request, response, next) => {
+  // Get message room of room to be deleted
+  const messageRoomId = request.query.messageRoomId
+
+  // Reference the database to get all messages in chat room with specified chat room id
+  const messagesInRoom = await Message.find({
+    chatRoomId: messageRoomId
+  })
+
+  // Loop through all images in the chat room and delete them. We need to check because some of them
+  // will be image
+  for (i = 0; i < messagesInRoom.length; i++) {
+    // If message content is "image", call the function to delete that image
+    if (messagesInRoom[i].content == "image") {
+      // Call the function to delete the image
+      messagePhotoController.deleteMessagePhotoBasedOnMessageId(messagesInRoom[i]._id)
+    }
+
+    // Delete the message itself
+    await Message.deleteOne({
+      _id: messagesInRoom[i]._id
+    })
+  }
+
+  // Delete the message room itself
+  await MessageRoom.deleteOne({
+    _id: messageRoomId
+  })
+
+  // Return response to the client
+  response.status(200).json({
+    status: "Done",
+    data: "Message room has been deleted"
+  })
+})
