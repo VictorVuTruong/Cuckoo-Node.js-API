@@ -33,7 +33,7 @@ router.post("/getSignUpToken", authenticationController.getSignUpToken);
 router.post("/validateLoginToken", firebaseAuthenticationController.checkToken);
 
 // Use the protect middleware to protect any routes beyond this point
-//router.use(firebaseAuthenticationController.protect);
+router.use(firebaseAuthenticationController.protect);
 
 // The route for getting list of users in a specified radius
 router.get("/getUserWithin", userController.getUserWithin);

@@ -114,7 +114,7 @@ io.on(
           postId = parsedData.postId;
         }
 
-        console.log("In post detail room")
+        console.log("In post detail room");
 
         // Let user join in the post detail room
         socket.join(postId);
@@ -156,8 +156,8 @@ io.on(
           content: commentObject.content,
         };
 
-        console.log(commentObject)
-        console.log(commentObjectToEmit)
+        console.log(commentObject);
+        console.log(commentObjectToEmit);
 
         // Emit the event and let the client app know that new comment was created
         socket.broadcast
