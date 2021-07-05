@@ -3,6 +3,8 @@ const path = require("path");
 // Import express
 const express = require("express");
 
+const cors = require("cors");
+
 // Create the app
 const app = express();
 
@@ -73,6 +75,13 @@ const messageRoomRouter = require(`${__dirname}/routes/messageRoute/messageRoomR
 
 // Router for the message photo
 const messagePhotoRouter = require(`${__dirname}/routes/messageRoute/messagePhotoRoutes`);
+
+var corsOptions = {
+  origin: "*",
+  credentials: true,
+  exposedHeaders: ["set-cookie"],
+};
+app.use(cors(corsOptions));
 
 // Use middleWare. This one is to work with JSON. This is also known as body parser
 // THIS IS VERY IMPORTANT
