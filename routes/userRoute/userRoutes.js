@@ -59,6 +59,10 @@ router.get(
   "/getUserInfoBasedOnToken",
   firebaseAuthenticationController.getUserInfoBasedOnTokenId
 );
+router.post(
+  "/getUserInfoBasedOnTokenBody",
+  firebaseAuthenticationController.getUserInfoBasedOnTokenId
+);
 
 // Export the app in order to be able to be used by the app
 module.exports = router;

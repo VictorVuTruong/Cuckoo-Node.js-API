@@ -2,7 +2,7 @@
 const express = require("express");
 
 // Import the Firebase authentication controller
-const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`)
+const firebaseAuthenticationController = require(`${__dirname}/../../controller/firebaseAuthenticationController`);
 
 // Create new router for the confession post
 const router = express.Router();

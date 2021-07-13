@@ -86,7 +86,7 @@ exports.getMessagePhotosBetweenUsers = catchAsync(
       arrayOfMessagePhotoURL.push(messagePhoto.imageURL);
     });
 
-    console.log(arrayOfMessagePhotos)
+    console.log(arrayOfMessagePhotos);
 
     // Return array of message photos to the user
     response.status(200).json({
