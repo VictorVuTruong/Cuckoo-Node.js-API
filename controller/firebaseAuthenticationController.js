@@ -80,9 +80,14 @@ exports.signUp = catchAsync(async (request, response, next) => {
 // The function to protect routes from unauthenticated users
 exports.protect = catchAsync(async (request, response, next) => {
   // Get id token from the user
-  const idToken = request.cookies.idToken;
-
-  console.log(idToken);
+  // Id token can come either from request cookies or request query. Hence, we will need to check both of them
+  // to see where does it come from
+  let idToken;
+  if (request.cookies.idToken != undefined) {
+    idToken = request.cookies.idToken;
+  } else {
+    idToken = request.headers.idtoken;
+  }
 
   // If user is not logged in the systen, return the error
   if (idToken == undefined) {
@@ -139,8 +144,13 @@ exports.checkToken = catchAsync(async (request, response, next) => {
 // The function to get user info based on token id
 exports.getUserInfoBasedOnTokenId = catchAsync(
   async (request, response, next) => {
-    // Get user Firebase UID
-    const firebaseUID = request.cookies.firebaseUID;
+    // Get user Firebase UID. It can come either from cookie or request query
+    let firebaseUID;
+    if (request.cookies.firebaseUID != undefined) {
+      firebaseUID = request.cookies.firebaseUID;
+    } else {
+      firebaseUID = request.query.firebaseUID;
+    }
 
     // Reference the database to get user with the specified Firebase UID
     const userInfo = await User.findOne({

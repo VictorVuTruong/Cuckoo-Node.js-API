@@ -77,9 +77,9 @@ const messageRoomRouter = require(`${__dirname}/routes/messageRoute/messageRoomR
 const messagePhotoRouter = require(`${__dirname}/routes/messageRoute/messagePhotoRoutes`);
 
 var corsOptions = {
-  origin: "*",
+  origin: "http://localhost:3000",
   credentials: true,
-  exposedHeaders: ["set-cookie"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept", "idToken"],
 };
 app.use(cors(corsOptions));
 

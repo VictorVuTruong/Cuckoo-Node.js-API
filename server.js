@@ -33,6 +33,14 @@ process.on("uncaughtException", (error) => {
 // Read variable from a file and save it as environment variable
 dotnev.config({ path: `${__dirname}/config.env` });
 
+// Initialize Firebase Admin SDK
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://hbtgram.firebaseio.com",
+  storageBucket:
+    "https://console.firebase.google.com/project/hbtgram/storage/hbtgram.appspot.com/files",
+});
+
 // Enter the password and connect to the DB
 const DB = process.env.DATABASE.replace(
   "<PASSWORD>",
@@ -46,14 +54,6 @@ mongoose
   })
   .then((connection) => {
     console.log("Connected");
-
-    // Initialize Firebase Admin SDK
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      databaseURL: "https://hbtgram.firebaseio.com",
-      storageBucket:
-        "https://console.firebase.google.com/project/hbtgram/storage/hbtgram.appspot.com/files",
-    });
   });
 
 // Import the app
@@ -207,6 +207,8 @@ io.on(
           // Get chat room id
           const chatRoomId = data.chatRoomId;
 
+          console.log(chatRoomId);
+
           // Let user join in the room name
           socket.join(`${chatRoomId}`);
         } // If data is not JSON, parse it first
@@ -216,6 +218,8 @@ io.on(
 
           // Get chat room id
           const chatRoomId = chatRoomData.chatRoomId;
+
+          console.log(chatRoomId);
 
           // Let user join in the room name
           socket.join(`${chatRoomId}`);
