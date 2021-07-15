@@ -207,8 +207,6 @@ io.on(
           // Get chat room id
           const chatRoomId = data.chatRoomId;
 
-          console.log(chatRoomId);
-
           // Let user join in the room name
           socket.join(`${chatRoomId}`);
         } // If data is not JSON, parse it first
@@ -219,10 +217,33 @@ io.on(
           // Get chat room id
           const chatRoomId = chatRoomData.chatRoomId;
 
-          console.log(chatRoomId);
-
           // Let user join in the room name
           socket.join(`${chatRoomId}`);
+        }
+      })
+    );
+
+    // Listen to event of when user leave the chat room
+    socket.on(
+      "leaveChatRoom",
+      catchAsync(async (data) => {
+        // In some cases, data is already in JSON format, we don't have to do anything. Hence, check it
+        if (data.chatRoomId != undefined) {
+          // Get the chat room id
+          const chatRoomId = data.chatRoomId;
+
+          // Let user leave the room with specified name
+          socket.leave(chatRoomId);
+        } // If the data is not JSON, parse it first
+        else {
+          // Get chat room id from the data
+          const chatRoomData = JSON.parse(data);
+
+          // Get the chat room id
+          const chatRoomId = chatRoomData.chatRoomId;
+
+          // Let user leave the room
+          socket.leave(chatRoomId);
         }
       })
     );
@@ -278,6 +299,8 @@ io.on(
     socket.on(
       "isTyping",
       catchAsync(async (data) => {
+        console.log("Is typing");
+
         // Check to see if we need to parse the data or not
         if (data.chatRoomId != undefined) {
           // Get the chat room id
@@ -300,6 +323,8 @@ io.on(
     socket.on(
       "isDoneTyping",
       catchAsync(async (data) => {
+        console.log("Is done typing");
+
         // Check to see if we need to parse the data or not
         if (data.chatRoomId != undefined) {
           // Get the chat room id
