@@ -79,10 +79,10 @@ process.on("unhandledRejection", (error) => {
   console.log(error.name, error.message);
 
   // Close the server and shut down the application
-  server.close(() => {
-    // Exit the application
-    process.exit(1);
-  });
+  // server.close(() => {
+  //   // Exit the application
+  //   process.exit(1);
+  // });s
 });
 
 // Chat server
